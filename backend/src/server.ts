@@ -1,4 +1,5 @@
 import express from 'express';
+import cors from 'cors';
 import pool from './config/db';
 import categoryRoutes from './routes/categoryRoutes';
 import expensesRoutes from './routes/expensesRoutes';
@@ -8,6 +9,7 @@ const port = 3000;
 
 // Middleware
 app.use(express.json());
+app.use(cors());
 
 // routes
 app.use('/api/categories', categoryRoutes);
