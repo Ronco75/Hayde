@@ -1,11 +1,14 @@
 import { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { expensesApi, categoriesApi } from '../services/api';
 import type { Expense, Category } from '../types';
+import Loading from '../components/common/Loading';
+import Button from '../components/common/Button';
+import Header from '../components/common/Header';
+import ExpenseCard from '../components/expenses/ExpenseCard';
 
 function ExpensesPage() {
   const { categoryId } = useParams<{ categoryId: string }>();
-  const navigate = useNavigate();
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [category, setCategory] = useState<Category | null>(null);
   const [loading, setLoading] = useState(true);
@@ -66,139 +69,173 @@ function ExpensesPage() {
     }
   };
 
-  if (loading) {
-    return <div className="flex justify-center items-center min-h-screen">Loading...</div>;
-  }
-
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-purple-700 to-purple-500 p-8">
+  return loading ? (
+    <Loading />
+  ) : (
+    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-purple-700 to-purple-500 p-6 sm:p-8">
       <div className="max-w-6xl mx-auto">
-        {/* Header with back button */}
-        <div className="flex items-center gap-4 mb-8">
-          <button
-            onClick={() => navigate('/categories')}
-            className="text-white hover:text-purple-200 transition"
-          >
-            ← חזרה לקטגוריות
-          </button>
-          <h1 className="text-4xl font-bold text-white">
-            הוצאות - {category?.name || 'טוען...'}
-          </h1>
-        </div>
+        <Header title={`הוצאות - ${category?.name || 'טוען...'}`} backTo="/categories" />
 
         {/* Add expense button */}
-        <button
-          onClick={() => setShowForm(!showForm)}
-          className="bg-white text-purple-600 px-6 py-3 rounded-lg font-bold hover:bg-purple-50 transition mb-6"
-        >
-          {showForm ? 'ביטול' : '+ הוסף הוצאה'}
-        </button>
+        <div className="mb-8">
+          <Button
+            variant="secondary"
+            onClick={() => setShowForm(!showForm)}
+            type="button"
+          >
+            {showForm ? '✕ ביטול' : 'הוסף הוצאה +'}
+          </Button>
+        </div>
 
         {/* Add expense form */}
         {showForm && (
-          <form onSubmit={handleCreateExpense} className="bg-white rounded-lg shadow-lg p-6 mb-8">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <form
+            onSubmit={handleCreateExpense}
+            className="bg-white rounded-xl shadow-2xl p-6 sm:p-8 mb-10 animate-[slideDown_0.3s_ease-out] transition-all duration-300 hover:shadow-purple-500/20"
+          >
+            <h2 className="text-2xl font-bold text-purple-900 mb-6">הוסף הוצאה חדשה</h2>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  שם ההוצאה
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  שם ההוצאה *
                 </label>
                 <input
                   type="text"
                   required
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-                  placeholder="למשל: DJ"
+                  className="
+                    w-full
+                    px-4
+                    py-3
+                    text-base
+                    border-2
+                    border-gray-300
+                    rounded-lg
+                    focus:outline-none
+                    focus:ring-4
+                    focus:ring-purple-300
+                    focus:border-purple-600
+                    transition-all
+                    duration-200
+                    placeholder:text-gray-400
+                  "
+                  placeholder="למשל: DJ, צלם, פרחים..."
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  מחיר ליחידה
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  מחיר ליחידה *
                 </label>
                 <input
                   type="number"
                   required
                   value={formData.price_per_unit}
                   onChange={(e) => setFormData({ ...formData, price_per_unit: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  className="
+                    w-full
+                    px-4
+                    py-3
+                    text-base
+                    border-2
+                    border-gray-300
+                    rounded-lg
+                    focus:outline-none
+                    focus:ring-4
+                    focus:ring-purple-300
+                    focus:border-purple-600
+                    transition-all
+                    duration-200
+                    placeholder:text-gray-400
+                  "
                   placeholder="0"
+                  step="0.01"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
                   כמות
                 </label>
                 <input
                   type="number"
                   value={formData.quantity}
                   onChange={(e) => setFormData({ ...formData, quantity: parseInt(e.target.value) })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  className="
+                    w-full
+                    px-4
+                    py-3
+                    text-base
+                    border-2
+                    border-gray-300
+                    rounded-lg
+                    focus:outline-none
+                    focus:ring-4
+                    focus:ring-purple-300
+                    focus:border-purple-600
+                    transition-all
+                    duration-200
+                  "
                   min="1"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
                   סכום ששולם
                 </label>
                 <input
                   type="number"
                   value={formData.amount_paid}
                   onChange={(e) => setFormData({ ...formData, amount_paid: parseFloat(e.target.value) })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  className="
+                    w-full
+                    px-4
+                    py-3
+                    text-base
+                    border-2
+                    border-gray-300
+                    rounded-lg
+                    focus:outline-none
+                    focus:ring-4
+                    focus:ring-purple-300
+                    focus:border-purple-600
+                    transition-all
+                    duration-200
+                  "
                   min="0"
+                  step="0.01"
+                  placeholder="0"
                 />
               </div>
             </div>
 
-            <button
-              type="submit"
-              className="mt-4 bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 transition"
-            >
-              שמור הוצאה
-            </button>
+            <div className="mt-6">
+              <Button type="submit" variant="primary">
+                ✓ שמור הוצאה
+              </Button>
+            </div>
           </form>
         )}
 
         {/* Expenses list */}
         {expenses.length === 0 ? (
-          <div className="text-center text-white text-lg mt-8">
-            אין הוצאות עדיין. הוסף את הראשונה! 💸
+          <div className="bg-white/10 backdrop-blur-sm border-2 border-white/20 rounded-2xl p-12 text-center">
+            <div className="text-6xl mb-4">💸</div>
+            <h2 className="text-2xl font-bold text-white mb-2">
+              אין הוצאות עדיין
+            </h2>
+            <p className="text-purple-100 text-lg">
+              התחל על ידי הוספת ההוצאה הראשונה שלך למעלה!
+            </p>
           </div>
         ) : (
-          <div className="bg-white rounded-lg shadow-lg overflow-hidden">
-            <table className="w-full">
-              <thead className="bg-purple-600 text-white">
-                <tr>
-                  <th className="px-6 py-3 text-right">שם</th>
-                  <th className="px-6 py-3 text-right">מחיר ליחידה</th>
-                  <th className="px-6 py-3 text-right">כמות</th>
-                  <th className="px-6 py-3 text-right">סה"כ עלות</th>
-                  <th className="px-6 py-3 text-right">שולם</th>
-                  <th className="px-6 py-3 text-right">נשאר לתשלום</th>
-                </tr>
-              </thead>
-              <tbody>
-                {expenses.map((expense) => (
-                  <tr key={expense.id} className="border-b hover:bg-purple-50">
-                    <td className="px-6 py-4 font-medium">{expense.name}</td>
-                    <td className="px-6 py-4">₪{parseFloat(expense.price_per_unit).toFixed(2)}</td>
-                    <td className="px-6 py-4">{expense.quantity}</td>
-                    <td className="px-6 py-4 font-bold text-purple-900">
-                      ₪{parseFloat(expense.total_cost).toFixed(2)}
-                    </td>
-                    <td className="px-6 py-4 text-green-600">
-                      ₪{parseFloat(expense.amount_paid).toFixed(2)}
-                    </td>
-                    <td className="px-6 py-4 text-red-600 font-bold">
-                      ₪{parseFloat(expense.remaining_amount).toFixed(2)}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {expenses.map((expense) => (
+              <ExpenseCard key={expense.id} expense={expense} />
+            ))}
           </div>
         )}
       </div>

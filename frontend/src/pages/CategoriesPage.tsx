@@ -1,13 +1,14 @@
 import { useEffect, useState } from 'react';
 import { categoriesApi } from '../services/api';
 import type { Category } from '../types';
-import { useNavigate } from 'react-router-dom';
+import Loading from '../components/common/Loading';
+import CategoryCard from '../components/categories/CategoryCard';
+import Button from '../components/common/Button';
 
 function CategoriesPage() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [newCategoryName, setNewCategoryName] = useState('');
   const [loading, setLoading] = useState(true);
-  const navigate = useNavigate();
 
   // Fetch categories on component mount
   useEffect(() => {
@@ -38,51 +39,68 @@ function CategoriesPage() {
     }
   };
 
-  if (loading) {
-    return <div className="flex justify-center items-center min-h-screen">Loading...</div>;
-  }
-
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-purple-700 to-purple-500 p-8">
-      <div className="max-w-4xl mx-auto">
-        <h1 className="text-4xl font-bold text-white mb-8">קטגוריות הוצאות</h1>
+  return loading ? (
+    <Loading />
+  ) : (
+    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-purple-700 to-purple-500 p-6 sm:p-8">
+      <div className="max-w-6xl mx-auto">
+        <h1 className="text-4xl sm:text-5xl font-bold text-white mb-10 text-center">
+          קטגוריות הוצאות
+        </h1>
 
         {/* Form to add new category */}
-        <form onSubmit={handleCreateCategory} className="bg-white rounded-lg shadow-lg p-6 mb-8">
-          <div className="flex gap-4">
+        <form
+          onSubmit={handleCreateCategory}
+          className="bg-white rounded-xl shadow-2xl p-6 sm:p-8 mb-10 transition-all duration-300 hover:shadow-purple-500/20"
+        >
+          <label className="block text-sm font-semibold text-gray-700 mb-3">
+            הוסף קטגוריה חדשה
+          </label>
+          <div className="flex flex-col sm:flex-row gap-4">
             <input
               type="text"
               value={newCategoryName}
               onChange={(e) => setNewCategoryName(e.target.value)}
-              placeholder="הוסף קטגוריה"
-              className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+              placeholder="למשל: אולם, צלם, קייטרינג..."
+              className="
+                flex-1
+                px-4
+                py-3
+                text-base
+                border-2
+                border-gray-300
+                rounded-lg
+                focus:outline-none
+                focus:ring-4
+                focus:ring-purple-300
+                focus:border-purple-600
+                transition-all
+                duration-200
+                placeholder:text-gray-400
+              "
             />
-            <button
-              type="submit"
-              className="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 transition"
-            >
-              הוסף קטגוריה
-            </button>
+            <Button type="submit">
+              הוסף קטגוריה +
+            </Button>
           </div>
         </form>
 
         {/* Categories list */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {categories.map((category) => (
-            <div
-              key={category.id}
-              onClick={() => navigate(`/categories/${category.id}/expenses`)}
-              className="bg-white rounded-lg shadow-lg p-6 hover:shadow-xl transition cursor-pointer"
-            >
-              <h2 className="text-2xl font-bold text-purple-900">{category.name}</h2>
-              <p className="text-gray-500 text-sm mt-2">צפייה בהוצאות</p>
-            </div>
-          ))}
-        </div>
-
-        {categories.length === 0 && (
-          <div className="text-center text-white text-lg mt-8">
-            אין קטגוריות עדיין. הוסף את הראשונה! 🎉
+        {categories.length === 0 ? (
+          <div className="bg-white/10 backdrop-blur-sm border-2 border-white/20 rounded-2xl p-12 text-center">
+            <div className="text-6xl mb-4">📋</div>
+            <h2 className="text-2xl font-bold text-white mb-2">
+              אין קטגוריות עדיין
+            </h2>
+            <p className="text-purple-100 text-lg">
+              התחל על ידי הוספת הקטגוריה הראשונה שלך למעלה!
+            </p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {categories.map((category) => (
+              <CategoryCard key={category.id} category={category} />
+            ))}
           </div>
         )}
       </div>
