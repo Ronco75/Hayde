@@ -1,0 +1,52 @@
+/* Custom Tooltip Styles */
+.tooltip-button {
+    position: relative;
+  }
+  
+  .tooltip-button::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%) translateY(-8px);
+    
+    /* Styling */
+    background-color: rgba(0, 0, 0, 0.9);
+    color: white;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    white-space: nowrap;
+    
+    /* Animation */
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.3s ease;
+    
+    /* Arrow */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+  
+  .tooltip-button::before {
+    content: '';
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%) translateY(-2px);
+    
+    /* Triangle arrow */
+    border: 6px solid transparent;
+    border-top-color: rgba(0, 0, 0, 0.9);
+    
+    /* Animation */
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.3s ease;
+  }
+  
+  .tooltip-button:hover::after,
+  .tooltip-button:hover::before {
+    opacity: 1;
+    transform: translateX(-50%) translateY(-4px);
+  }

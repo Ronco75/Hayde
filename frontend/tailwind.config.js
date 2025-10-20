@@ -4,6 +4,7 @@ export default {
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
   ],
+  darkMode: 'class',
   theme: {
     extend: {
       fontFamily: {
@@ -22,6 +23,11 @@ export default {
           800: '#6b21a8',
           900: '#581c87',
         },
+      },
+      boxShadow: {
+        'elev-1': '0 1px 2px 0 rgb(0 0 0 / 0.2)',
+        'elev-2': '0 2px 8px -2px rgb(0 0 0 / 0.35)',
+        'elev-3': '0 10px 20px -10px rgb(0 0 0 / 0.5)',
       },
       transitionDuration: {
         '300': '300ms',

@@ -99,3 +99,22 @@ export const deleteExpense = async (req: Request, res: Response) => {
         res.status(500).json({ error: 'Internal server error' });
     }
 };
+
+// Get totals grouped by category
+export const getCategoryTotals = async (_req: Request, res: Response) => {
+  try {
+    const result = await pool.query(
+      `SELECT 
+         category_id,
+         SUM(price_per_unit * quantity) as total_cost,
+         SUM(amount_paid) as amount_paid,
+         SUM(price_per_unit * quantity - amount_paid) as remaining_amount
+       FROM expenses
+       GROUP BY category_id`
+    );
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Error fetching category totals:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};

@@ -15,3 +15,10 @@ export interface Category {
     total_cost: string;
     remaining_amount: string;
   }
+
+  export interface CategoryTotals {
+    category_id: number;
+    total_cost: string;
+    amount_paid: string;
+    remaining_amount: string;
+  }

@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { createExpense, deleteExpense, getAllExpenses, getExpensesByCategory, updateExpense } from '../controllers/expensesController';
+import { createExpense, deleteExpense, getAllExpenses, getExpensesByCategory, updateExpense, getCategoryTotals } from '../controllers/expensesController';
 
 const router = Router();
 
@@ -17,6 +17,9 @@ router.delete('/:id', deleteExpense);
 
 //PUT /api/expenses/:id - Update an expense
 router.put('/:id', updateExpense);
+
+// GET /api/expenses/totals - Totals per category
+router.get('/totals', getCategoryTotals);
 
 
 

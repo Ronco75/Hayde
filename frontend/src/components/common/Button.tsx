@@ -1,25 +1,33 @@
 interface ButtonProps {
     children: React.ReactNode;
-    variant?: 'primary' | 'secondary' | 'danger';
+    variant?: 'primary' | 'secondary' | 'ghost' | 'danger';
+    size?: 'sm' | 'md' | 'lg' | 'icon';
     type?: 'button' | 'submit';
     onClick?: () => void;
     disabled?: boolean;
 }
 
-function Button({ children, variant = 'primary', type = 'button', onClick, disabled = false }: ButtonProps) {
-    const variantClasses = {
-        primary: "bg-purple-600 text-white hover:bg-purple-700 active:bg-purple-800 focus-visible:ring-purple-300",
-        secondary: "bg-gray-600 text-white hover:bg-gray-700 active:bg-gray-800 focus-visible:ring-gray-300",
+function Button({ children, variant = 'primary', size = 'md', type = 'button', onClick, disabled = false }: ButtonProps) {
+    const variantClasses: Record<string, string> = {
+        primary: "bg-primary-600 text-white hover:bg-primary-700 active:bg-primary-800 focus-visible:ring-primary-300",
+        secondary: "bg-slate-700 text-white hover:bg-slate-600 active:bg-slate-800 focus-visible:ring-slate-500",
+        ghost: "bg-transparent text-primary-300 hover:bg-slate-800/60 focus-visible:ring-primary-400",
         danger: "bg-red-600 text-white hover:bg-red-700 active:bg-red-800 focus-visible:ring-red-300",
     };
 
+    const sizeClasses: Record<string, string> = {
+        sm: "px-3 py-2 text-sm",
+        md: "px-5 py-3 text-base",
+        lg: "px-6 py-4 text-base",
+        icon: "p-2",
+    };
+
     const buttonClass = `
-        px-6 py-3
+        ${sizeClasses[size]}
         rounded-lg
         font-semibold
-        text-base
         transition-all
-        duration-300
+        duration-200
         ease-in-out
         cursor-pointer
         transform
@@ -30,8 +38,8 @@ function Button({ children, variant = 'primary', type = 'button', onClick, disab
         disabled:opacity-50
         disabled:cursor-not-allowed
         disabled:transform-none
-        shadow-md
-        hover:shadow-lg
+        shadow-elev-2
+        hover:shadow-elev-3
         ${variantClasses[variant]}
     `.trim().replace(/\s+/g, ' ');
 

@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { createCategory, getAllCategories } from '../controllers/categoryController';
+import { createCategory, getAllCategories, updateCategory, deleteCategory } from '../controllers/categoryController';
 
 const router = Router();
 
@@ -8,5 +8,11 @@ router.post('/', createCategory);
 
 //GET /api/categories - Get all categories
 router.get('/', getAllCategories);
+
+// PUT /api/categories/:id - Update category
+router.put('/:id', updateCategory);
+
+// DELETE /api/categories/:id - Delete category
+router.delete('/:id', deleteCategory);
 
 export default router;

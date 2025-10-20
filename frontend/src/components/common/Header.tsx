@@ -10,29 +10,20 @@ function Header({ title, backTo }: HeaderProps) {
   const navigate = useNavigate();
 
   return (
-    <div className="mb-8">
-      <nav className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl shadow-2xl shadow-purple-900/30 p-5 sm:p-6">
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+    <div className="sticky top-0 z-30 -mx-4 sm:-mx-8 px-4 sm:px-8 py-4 mb-8 bg-slate-950/70 backdrop-blur border-b border-white/10">
+      <div className="max-w-6xl mx-auto flex items-center justify-between">
+        <div className="flex items-center gap-3">
           {backTo && (
-            <div className="order-1 w-full sm:w-auto flex justify-center sm:justify-end">
-              <Button
-                variant="secondary"
-                onClick={() => navigate(backTo)}
-                type="button"
-              >
-                <span className="flex items-center gap-2 whitespace-nowrap">
-                  <span>←</span>
-                  <span>חזרה</span>
-                </span>
-              </Button>
-            </div>
+            <Button variant="ghost" size="sm" onClick={() => navigate(backTo)} type="button">
+              ← חזרה
+            </Button>
           )}
-
-          <h1 className="order-2 text-2xl sm:text-3xl font-bold text-white text-center sm:text-right w-full drop-shadow-lg">
-            {title}
-          </h1>
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-100">{title}</h1>
         </div>
-      </nav>
+        <div className="flex items-center gap-2">
+          {/* actions slot (future) */}
+        </div>
+      </div>
     </div>
   );
 }
