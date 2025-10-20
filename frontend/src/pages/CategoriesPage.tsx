@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { categoriesApi, expensesApi } from '../services/api';
 import type { Category, CategoryTotals } from '../types';
+import { formatNis } from '../utils/format';
 import Loading from '../components/common/Loading';
 import CategoryCard from '../components/categories/CategoryCard';
 import Button from '../components/common/Button';
@@ -11,6 +12,7 @@ function CategoriesPage() {
   const [newCategoryName, setNewCategoryName] = useState('');
   const [loading, setLoading] = useState(true);
   const [totalsByCategoryId, setTotalsByCategoryId] = useState<Record<number, CategoryTotals>>({});
+  const [overallTotals, setOverallTotals] = useState({ total_cost: 0, amount_paid: 0, remaining: 0 });
 
   // Fetch categories on component mount
   useEffect(() => {
@@ -25,10 +27,17 @@ function CategoriesPage() {
       ]);
       setCategories(categoriesResponse.data);
       const totalsMap: Record<number, CategoryTotals> = {};
+      let sum = { total_cost: 0, amount_paid: 0, remaining: 0 };
       totalsResponse.data.forEach((row) => {
         totalsMap[row.category_id] = row;
+        const total = parseFloat(row.total_cost);
+        const paid = parseFloat(row.amount_paid);
+        sum.total_cost += isNaN(total) ? 0 : total;
+        sum.amount_paid += isNaN(paid) ? 0 : paid;
       });
+      sum.remaining = sum.total_cost - sum.amount_paid;
       setTotalsByCategoryId(totalsMap);
+      setOverallTotals(sum);
     } catch (error) {
       console.error('Error loading categories:', error);
     } finally {
@@ -100,28 +109,47 @@ function CategoriesPage() {
     <Loading />
   ) : (
     <>
-    <div className="min-h-screen bg-slate-950 p-6 sm:p-8">
+    <div className="min-h-screen bg-slate-950 p-6 sm:p-7">
       <div className="max-w-6xl mx-auto">
-        <h1 className="text-4xl sm:text-5xl font-extrabold text-gray-100 mb-10 text-center">
-          קטגוריות הוצאות
+        <h1 className="text-4xl sm:text-4xl md:text-3xl font-extrabold text-gray-100 mb-8 sm:mb-7 text-center leading-tight">
+          הוצאות
         </h1>
+
+        {/* Overall totals summary */}
+        <div className="bg-slate-900 border border-white/10 rounded-xl sm:rounded-lg shadow-elev-2 p-6 sm:p-7 mb-8 sm:mb-7">
+          <h2 className="text-xl sm:text-lg font-bold text-primary-200 mb-4 sm:mb-3">סיכום כולל</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-3">
+            <div className="bg-slate-800/70 border border-white/10 rounded-md p-4 sm:p-3">
+              <div className="text-gray-300 text-sm sm:text-xs">סה"כ עלות</div>
+              <div className="text-primary-300 font-extrabold text-2xl sm:text-xl">{formatNis(overallTotals.total_cost)}</div>
+            </div>
+            <div className="bg-green-500/10 border border-white/10 rounded-md p-4 sm:p-3">
+              <div className="text-green-400 text-sm sm:text-xs">שולם</div>
+              <div className="text-green-300 font-extrabold text-2xl sm:text-xl">{formatNis(overallTotals.amount_paid)}</div>
+            </div>
+            <div className="bg-rose-500/10 border border-white/10 rounded-md p-4 sm:p-3">
+              <div className="text-rose-400 text-sm sm:text-xs">נשאר לתשלום</div>
+              <div className="text-rose-300 font-extrabold text-2xl sm:text-xl">{formatNis(overallTotals.remaining)}</div>
+            </div>
+          </div>
+        </div>
 
         {/* Form to add new category */}
         <form
           onSubmit={handleCreateCategory}
-          className="bg-slate-900 border border-white/10 rounded-xl shadow-elev-2 p-6 sm:p-8 mb-10"
+          className="bg-slate-900 border border-white/10 rounded-xl sm:rounded-lg shadow-elev-2 p-6 sm:p-7 mb-10 sm:mb-8"
         >
           <label className="block text-sm font-semibold text-gray-700 mb-3">
             הוסף קטגוריה חדשה
           </label>
-          <div className="flex flex-col sm:flex-row gap-4">
+          <div className="flex flex-col sm:flex-row gap-4 sm:gap-3">
             <input
               type="text"
               value={newCategoryName}
               onChange={(e) => setNewCategoryName(e.target.value)}
               placeholder="למשל: אולם, צלם, קייטרינג..."
               className="
-                flex-1 px-4 py-3 text-base rounded-lg
+                flex-1 px-4 py-3 text-base sm:text-sm sm:px-3 sm:py-2.5 rounded-lg sm:rounded-md
                 bg-slate-800 text-gray-100 placeholder:text-gray-400
                 border border-white/10 focus:outline-none focus:ring-4
                 focus:ring-primary-300 focus:border-primary-600 transition-all duration-200
@@ -145,7 +173,7 @@ function CategoriesPage() {
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 sm:gap-6 md:gap-5">
             {categories.map((category) => (
               <CategoryCard
                 key={category.id}
@@ -202,19 +230,11 @@ function CategoriesPage() {
             onChange={(e) => setEditName(e.target.value)}
             required
             className="
-              w-full
-              px-4
-              py-3
-              text-base
-              border-2
-              border-gray-300
+              w-full px-4 py-3 text-base
               rounded-lg
-              focus:outline-none
-              focus:ring-4
-              focus:ring-purple-300
-              focus:border-purple-600
-              transition-all
-              duration-200
+              bg-slate-800 text-gray-100 placeholder:text-gray-400
+              border border-white/10 focus:outline-none focus:ring-4
+              focus:ring-primary-300 focus:border-primary-600 transition-all duration-200
             "
             placeholder="שם חדש"
           />

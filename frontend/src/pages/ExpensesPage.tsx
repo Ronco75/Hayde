@@ -7,6 +7,8 @@ import Button from '../components/common/Button';
 import Header from '../components/common/Header';
 import ExpenseCard from '../components/expenses/ExpenseCard';
 import Modal from '../components/common/Modal';
+import Tooltip from '../components/common/Tooltip';
+import { formatNis } from '../utils/format';
 
 function ExpensesPage() {
   const { categoryId } = useParams<{ categoryId: string }>();
@@ -24,11 +26,11 @@ function ExpensesPage() {
     amount_paid: 0,
   });
 
-  // ✨ State for delete modal
+  // State for delete modal
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [expenseToDelete, setExpenseToDelete] = useState<number | null>(null);
 
-  // ✨ State for edit modal
+  // State for edit modal
   const [showEditModal, setShowEditModal] = useState(false);
   const [expenseToEdit, setExpenseToEdit] = useState<Expense | null>(null);
   const [editFormData, setEditFormData] = useState({
@@ -100,13 +102,13 @@ function ExpensesPage() {
     }
   };
 
-  // ✨ Handle delete button click
+  // Handle delete button click
   const handleDeleteClick = (expenseId: number) => {
     setExpenseToDelete(expenseId);
     setShowDeleteModal(true);
   };
 
-  // ✨ Confirm delete
+    // Confirm delete
   const handleDeleteConfirm = async () => {
     if (!expenseToDelete) return;
 
@@ -125,7 +127,7 @@ function ExpensesPage() {
     }
   };
 
-  // ✨ Handle edit button click
+  // Handle edit button click
   const handleEditClick = (expense: Expense) => {
     setExpenseToEdit(expense);
     setEditFormData({
@@ -137,7 +139,7 @@ function ExpensesPage() {
     setShowEditModal(true);
   };
 
-  // ✨ Handle edit submit
+  // Handle edit submit
   const handleEditSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!expenseToEdit || !categoryId) return;
@@ -168,31 +170,31 @@ function ExpensesPage() {
   return loading ? (
     <Loading />
   ) : (
-    <div className="min-h-screen bg-slate-950 p-6 sm:p-8">
+    <div className="min-h-screen bg-slate-950 p-6 sm:p-7">
       <div className="max-w-6xl mx-auto">
         <Header title={`הוצאות - ${category?.name || 'טוען...'}`} backTo="/categories" />
 
         {/* Totals summary */}
-        <div className="bg-slate-900 border border-white/10 rounded-xl shadow-elev-2 p-6 sm:p-8 mb-8">
-          <h2 className="text-xl font-bold text-primary-200 mb-4">סיכום קטגוריה</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="bg-slate-800/70 border border-white/10 rounded-lg p-4">
-              <div className="text-gray-300 text-sm">סה"כ עלות</div>
-              <div className="text-primary-300 font-extrabold text-2xl">₪{totals.total_cost.toFixed(2)}</div>
+        <div className="bg-slate-900 border border-white/10 rounded-xl sm:rounded-lg shadow-elev-2 p-6 sm:p-7 mb-8 sm:mb-7">
+          <h2 className="text-xl sm:text-lg font-bold text-primary-200 mb-4 sm:mb-3">סיכום קטגוריה</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-3">
+            <div className="bg-slate-800/70 border border-white/10 rounded-md p-4 sm:p-3">
+              <div className="text-gray-300 text-sm sm:text-xs">סה"כ עלות</div>
+              <div className="text-primary-300 font-extrabold text-2xl sm:text-xl">{formatNis(totals.total_cost)}</div>
             </div>
-            <div className="bg-green-500/10 border border-white/10 rounded-lg p-4">
-              <div className="text-green-400 text-sm">שולם</div>
-              <div className="text-green-300 font-extrabold text-2xl">₪{totals.amount_paid.toFixed(2)}</div>
+            <div className="bg-green-500/10 border border-white/10 rounded-md p-4 sm:p-3">
+              <div className="text-green-400 text-sm sm:text-xs">שולם</div>
+              <div className="text-green-300 font-extrabold text-2xl sm:text-xl">{formatNis(totals.amount_paid)}</div>
             </div>
-            <div className="bg-rose-500/10 border border-white/10 rounded-lg p-4">
-              <div className="text-rose-400 text-sm">נשאר לתשלום</div>
-              <div className="text-rose-300 font-extrabold text-2xl">₪{totals.remaining.toFixed(2)}</div>
+            <div className="bg-rose-500/10 border border-white/10 rounded-md p-4 sm:p-3">
+              <div className="text-rose-400 text-sm sm:text-xs">נשאר לתשלום</div>
+              <div className="text-rose-300 font-extrabold text-2xl sm:text-xl">{formatNis(totals.remaining)}</div>
             </div>
           </div>
         </div>
 
         {/* Add expense button */}
-        <div className="mb-8">
+        <div className="mb-8 sm:mb-7">
           <Button
             variant="secondary"
             onClick={() => setShowForm(!showForm)}
@@ -206,11 +208,11 @@ function ExpensesPage() {
         {showForm && (
           <form
             onSubmit={handleCreateExpense}
-            className="bg-slate-900 border border-white/10 rounded-xl shadow-elev-2 p-6 sm:p-8 mb-10"
+            className="bg-slate-900 border border-white/10 rounded-xl sm:rounded-lg shadow-elev-2 p-6 sm:p-7 mb-10 sm:mb-8"
           >
-            <h2 className="text-2xl font-bold text-primary-200 mb-6">הוצאה חדשה</h2>
+            <h2 className="text-2xl sm:text-xl font-bold text-primary-200 mb-6 sm:mb-5">הוצאה חדשה</h2>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-5">
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
                   שם ההוצאה
@@ -221,7 +223,7 @@ function ExpensesPage() {
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   required
                   className="
-                    w-full px-4 py-3 text-base rounded-lg
+                    w-full px-4 py-3 text-base sm:text-sm sm:px-3 sm:py-2.5 rounded-lg sm:rounded-md
                     bg-slate-800 text-gray-100 placeholder:text-gray-400
                     border border-white/10 focus:outline-none focus:ring-4
                     focus:ring-primary-300 focus:border-primary-600 transition-all duration-200
@@ -240,7 +242,7 @@ function ExpensesPage() {
                   onChange={(e) => setFormData({ ...formData, price_per_unit: e.target.value })}
                   required
                   className="
-                    w-full px-4 py-3 text-base rounded-lg
+                    w-full px-4 py-3 text-base sm:text-sm sm:px-3 sm:py-2.5 rounded-lg sm:rounded-md
                     bg-slate-800 text-gray-100 placeholder:text-gray-400
                     border border-white/10 focus:outline-none focus:ring-4
                     focus:ring-primary-300 focus:border-primary-600 transition-all duration-200
@@ -259,7 +261,7 @@ function ExpensesPage() {
                   value={formData.quantity}
                   onChange={(e) => setFormData({ ...formData, quantity: parseInt(e.target.value) })}
                   className="
-                    w-full px-4 py-3 text-base rounded-lg
+                    w-full px-4 py-3 text-base sm:text-sm sm:px-3 sm:py-2.5 rounded-lg sm:rounded-md
                     bg-slate-800 text-gray-100 placeholder:text-gray-400
                     border border-white/10 focus:outline-none focus:ring-4
                     focus:ring-primary-300 focus:border-primary-600 transition-all duration-200
@@ -272,20 +274,36 @@ function ExpensesPage() {
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
                   סכום ששולם
                 </label>
-                <input
-                  type="number"
-                  value={formData.amount_paid}
-                  onChange={(e) => setFormData({ ...formData, amount_paid: parseFloat(e.target.value) })}
-                  className="
-                    w-full px-4 py-3 text-base rounded-lg
-                    bg-slate-800 text-gray-100 placeholder:text-gray-400
-                    border border-white/10 focus:outline-none focus:ring-4
-                    focus:ring-primary-300 focus:border-primary-600 transition-all duration-200
-                  "
-                  min="0"
-                  step="0.01"
-                  placeholder="0"
-                />
+                <div className="flex items-center gap-3">
+                  <input
+                    type="number"
+                    value={formData.amount_paid}
+                    onChange={(e) => setFormData({ ...formData, amount_paid: parseFloat(e.target.value) })}
+                    className="
+                      w-full px-4 py-3 text-base sm:text-sm sm:px-3 sm:py-2.5 rounded-lg sm:rounded-md
+                      bg-slate-800 text-gray-100 placeholder:text-gray-400
+                      border border-white/10 focus:outline-none focus:ring-4
+                      focus:ring-primary-300 focus:border-primary-600 transition-all duration-200
+                    "
+                    min="0"
+                    step="0.01"
+                    placeholder="0"
+                  />
+                  <Tooltip content="מילוי אוטומטי לסכום הכולל">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const price = parseFloat(formData.price_per_unit as string);
+                        const qty = Number(formData.quantity) || 0;
+                        const total = (isNaN(price) ? 0 : price) * qty;
+                        setFormData({ ...formData, amount_paid: Math.max(0, total) });
+                      }}
+                      className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-md text-sm transition-colors"
+                    >
+                      שולם
+                    </button>
+                  </Tooltip>
+                </div>
               </div>
             </div>
 
@@ -300,16 +318,16 @@ function ExpensesPage() {
         {/* Expenses list */}
         {expenses.length === 0 ? (
           <div className="bg-white/10 backdrop-blur-sm border-2 border-white/20 rounded-2xl p-12 text-center">
-            <div className="text-6xl mb-4">💸</div>
-            <h2 className="text-2xl font-bold text-white mb-2">
+            <div className="text-6xl sm:text-5xl mb-4">💸</div>
+            <h2 className="text-2xl sm:text-xl font-bold text-white mb-2 leading-tight">
               אין הוצאות עדיין
             </h2>
-            <p className="text-purple-100 text-lg">
+            <p className="text-purple-100 text-lg sm:text-base">
               התחל על ידי הוספת ההוצאה הראשונה שלך למעלה!
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 sm:gap-6 md:gap-5">
             {expenses.map((expense) => (
               <ExpenseCard 
                 key={expense.id} 
@@ -327,11 +345,11 @@ function ExpensesPage() {
           onClose={() => setShowDeleteModal(false)}
         >
           <div className="text-center">
-            <div className="text-6xl mb-4">🗑️</div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">
+            <div className="text-6xl sm:text-5xl mb-4">🗑️</div>
+            <h2 className="text-2xl sm:text-xl font-bold text-gray-900 mb-4 leading-tight">
               מחיקת הוצאה
             </h2>
-            <p className="text-gray-600 mb-8">
+            <p className="text-gray-600 mb-8 text-base sm:text-sm">
               האם אתה בטוח שברצונך למחוק הוצאה זו?
               <br />
               <span className="font-semibold">לא ניתן לשחזר את הפעולה הזו.</span>
@@ -340,12 +358,12 @@ function ExpensesPage() {
               <button
                 onClick={() => setShowDeleteModal(false)}
                 className="
-                  px-6 py-3 
+                  px-6 py-3 sm:px-5 sm:py-2.5
                   bg-gray-200 
                   hover:bg-gray-300 
                   text-gray-800 
-                  font-semibold 
-                  rounded-lg 
+                  font-semibold text-sm sm:text-xs
+                  rounded-lg sm:rounded-md
                   transition-all
                 "
               >
@@ -354,12 +372,12 @@ function ExpensesPage() {
               <button
                 onClick={handleDeleteConfirm}
                 className="
-                  px-6 py-3 
+                  px-6 py-3 sm:px-5 sm:py-2.5
                   bg-red-600 
                   hover:bg-red-700 
                   text-white 
-                  font-semibold 
-                  rounded-lg 
+                  font-semibold text-sm sm:text-xs
+                  rounded-lg sm:rounded-md
                   transition-all
                 "
               >
@@ -369,18 +387,18 @@ function ExpensesPage() {
           </div>
         </Modal>
 
-        {/* ✨ Edit Modal */}
+        {/* Edit Modal */}
         <Modal 
           isOpen={showEditModal} 
           onClose={() => setShowEditModal(false)}
         >
           <div>
-            <h2 className="text-2xl font-bold text-purple-900 mb-6">עריכת הוצאה</h2>
+            <h2 className="text-2xl sm:text-xl font-bold text-purple-900 mb-6 sm:mb-5">עריכת הוצאה</h2>
             
             <form onSubmit={handleEditSubmit}>
-              <div className="space-y-4">
+              <div className="space-y-4 sm:space-y-3.5">
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  <label className="block text-sm font-semibold text-gray-300 mb-2">
                     שם ההוצאה
                   </label>
                   <input
@@ -389,23 +407,17 @@ function ExpensesPage() {
                     onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })}
                     required
                     className="
-                      w-full
-                      px-4
-                      py-3
-                      text-base
-                      border-2
-                      border-gray-300
-                      rounded-lg
-                      focus:outline-none
-                      focus:ring-4
-                      focus:ring-purple-300
-                      focus:border-purple-600
+                      w-full px-4 py-3 text-base sm:text-sm sm:px-3 sm:py-2.5
+                      rounded-lg sm:rounded-md
+                      bg-slate-800 text-gray-100 placeholder:text-gray-400
+                      border border-white/10 focus:outline-none focus:ring-4
+                      focus:ring-primary-300 focus:border-primary-600 transition-all duration-200
                     "
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  <label className="block text-sm font-semibold text-gray-300 mb-2">
                     מחיר ליחידה
                   </label>
                   <input
@@ -414,17 +426,11 @@ function ExpensesPage() {
                     onChange={(e) => setEditFormData({ ...editFormData, price_per_unit: e.target.value })}
                     required
                     className="
-                      w-full
-                      px-4
-                      py-3
-                      text-base
-                      border-2
-                      border-gray-300
-                      rounded-lg
-                      focus:outline-none
-                      focus:ring-4
-                      focus:ring-purple-300
-                      focus:border-purple-600
+                      w-full px-4 py-3 text-base sm:text-sm sm:px-3 sm:py-2.5
+                      rounded-lg sm:rounded-md
+                      bg-slate-800 text-gray-100 placeholder:text-gray-400
+                      border border-white/10 focus:outline-none focus:ring-4
+                      focus:ring-primary-300 focus:border-primary-600 transition-all duration-200
                     "
                     min="0"
                     step="0.01"
@@ -432,7 +438,7 @@ function ExpensesPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  <label className="block text-sm font-semibold text-gray-300 mb-2">
                     כמות
                   </label>
                   <input
@@ -440,61 +446,65 @@ function ExpensesPage() {
                     value={editFormData.quantity}
                     onChange={(e) => setEditFormData({ ...editFormData, quantity: parseInt(e.target.value) })}
                     className="
-                      w-full
-                      px-4
-                      py-3
-                      text-base
-                      border-2
-                      border-gray-300
-                      rounded-lg
-                      focus:outline-none
-                      focus:ring-4
-                      focus:ring-purple-300
-                      focus:border-purple-600
+                      w-full px-4 py-3 text-base sm:text-sm sm:px-3 sm:py-2.5
+                      rounded-lg sm:rounded-md
+                      bg-slate-800 text-gray-100 placeholder:text-gray-400
+                      border border-white/10 focus:outline-none focus:ring-4
+                      focus:ring-primary-300 focus:border-primary-600 transition-all duration-200
                     "
                     min="1"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  <label className="block text-sm font-semibold text-gray-300 mb-2">
                     סכום ששולם
                   </label>
-                  <input
-                    type="number"
-                    value={editFormData.amount_paid}
-                    onChange={(e) => setEditFormData({ ...editFormData, amount_paid: parseFloat(e.target.value) })}
-                    className="
-                      w-full
-                      px-4
-                      py-3
-                      text-base
-                      border-2
-                      border-gray-300
-                      rounded-lg
-                      focus:outline-none
-                      focus:ring-4
-                      focus:ring-purple-300
-                      focus:border-purple-600
-                    "
-                    min="0"
-                    step="0.01"
-                  />
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="number"
+                      value={editFormData.amount_paid}
+                      onChange={(e) => setEditFormData({ ...editFormData, amount_paid: parseFloat(e.target.value) })}
+                      className="
+                        w-full px-4 py-3 text-base sm:text-sm sm:px-3 sm:py-2.5
+                        rounded-lg sm:rounded-md
+                        bg-slate-800 text-gray-100 placeholder:text-gray-400
+                        border border-white/10 focus:outline-none focus:ring-4
+                        focus:ring-primary-300 focus:border-primary-600 transition-all duration-200
+                      "
+                      min="0"
+                      step="0.01"
+                      placeholder="0"
+                    />
+                    <Tooltip content="מילוי אוטומטי לסכום הכולל">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (expenseToEdit) {
+                            const total = parseFloat(expenseToEdit.total_cost);
+                            setEditFormData({ ...editFormData, amount_paid: isNaN(total) ? 0 : total });
+                          }
+                        }}
+                        className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-md text-sm transition-colors"
+                      >
+                        שולם
+                      </button>
+                    </Tooltip>
+                  </div>
                 </div>
               </div>
 
-              <div className="flex gap-4 mt-6">
+              <div className="flex gap-4 sm:gap-3 mt-6 sm:mt-5">
                 <button
                   type="button"
                   onClick={() => setShowEditModal(false)}
                   className="
-                    flex-1
-                    px-6 py-3 
+                    flex-1 px-6 py-3 sm:px-5 sm:py-2.5
                     bg-gray-200 
                     hover:bg-gray-300 
                     text-gray-800 
-                    font-semibold 
-                    rounded-lg 
+                    font-semibold text-sm sm:text-xs
+                    rounded-lg sm:rounded-md
                     transition-all
                   "
                 >
@@ -503,13 +513,12 @@ function ExpensesPage() {
                 <button
                   type="submit"
                   className="
-                    flex-1
-                    px-6 py-3 
+                    flex-1 px-6 py-3 sm:px-5 sm:py-2.5
                     bg-purple-600 
                     hover:bg-purple-700 
                     text-white 
-                    font-semibold 
-                    rounded-lg 
+                    font-semibold text-sm sm:text-xs
+                    rounded-lg sm:rounded-md
                     transition-all
                   "
                 >
