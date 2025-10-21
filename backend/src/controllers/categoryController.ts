@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import pool from '../config/db';
+import { Category } from '../types/Category';
 
 // Create a new category
 export const createCategory = async (req: Request, res: Response) => {
@@ -12,11 +13,13 @@ export const createCategory = async (req: Request, res: Response) => {
     }
 
     // Insert into database
-    const result = await pool.query(
+    const result = await pool.query<Category>(
       'INSERT INTO categories (name) VALUES ($1) RETURNING *',
       [name]
     );
-    res.status(201).json(result.rows[0]);
+
+    const newCategory: Category = result.rows[0];
+    res.status(201).json(newCategory);
 
   } catch (error) {
     console.error('Error creating category:', error);
@@ -27,8 +30,9 @@ export const createCategory = async (req: Request, res: Response) => {
 // Get all categories
 export const getAllCategories = async (req: Request, res: Response) => {
   try {
-    const result = await pool.query('SELECT * FROM categories ORDER BY created_at DESC');
-    res.json(result.rows);
+    const result = await pool.query<Category>('SELECT * FROM categories ORDER BY created_at DESC');
+    const categories: Category[] = result.rows;
+    res.json(categories);
   } catch (error) {
     console.error('Error fetching categories:', error);
     res.status(500).json({ error: 'Internal server error' });
@@ -45,7 +49,8 @@ export const updateCategory = async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'Category name is required' });
     }
 
-    const result = await pool.query(
+    // Update in database
+    const result = await pool.query<Category>(
       'UPDATE categories SET name = $1 WHERE id = $2 RETURNING *',
       [name, id]
     );
@@ -54,7 +59,9 @@ export const updateCategory = async (req: Request, res: Response) => {
       return res.status(404).json({ error: 'Category not found' });
     }
 
-    res.json(result.rows[0]);
+    const updatedCategory: Category = result.rows[0];
+    res.json(updatedCategory);
+    
   } catch (error) {
     console.error('Error updating category:', error);
     res.status(500).json({ error: 'Internal server error' });

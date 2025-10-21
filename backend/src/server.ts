@@ -3,6 +3,8 @@ import cors from 'cors';
 import pool from './config/db';
 import categoryRoutes from './routes/categoryRoutes';
 import expensesRoutes from './routes/expensesRoutes';
+import guestRoutes from './routes/guestRoutes';
+import groupRoutes from './routes/groupRoutes';
 
 const app = express();
 const port = 3000;
@@ -14,6 +16,8 @@ app.use(cors());
 // routes
 app.use('/api/categories', categoryRoutes);
 app.use('/api/expenses', expensesRoutes);
+app.use('/api/guests', guestRoutes);
+app.use('/api/groups', groupRoutes);
 
 // Test database connection
 app.get('/api/health', async (req, res) => {

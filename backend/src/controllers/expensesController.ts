@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import pool from '../config/db';
+import { Expense } from '../types/Expense';
 
 // Create a new expense
 export const createExpense = async (req: Request, res: Response) => {
@@ -10,7 +11,7 @@ export const createExpense = async (req: Request, res: Response) => {
         return res.status(400).json({ error: 'All fields are required' });
     }
     try {
-        const result = await pool.query(
+        const result = await pool.query<Expense>(
             `INSERT INTO expenses (category_id, name, price_per_unit, quantity, amount_paid) 
              VALUES ($1, $2, $3, $4, $5) 
              RETURNING *, 
@@ -18,7 +19,8 @@ export const createExpense = async (req: Request, res: Response) => {
                (price_per_unit * quantity - amount_paid) as remaining_amount`,
             [category_id, name, price_per_unit, quantity, amount_paid]
           );
-        res.status(201).json(result.rows[0]);
+        const newExpense: Expense = result.rows[0];
+        res.status(201).json(newExpense);
     } catch (error) {
         console.error('Error creating expense:', error);
         res.status(500).json({ error: 'Internal server error' });
@@ -28,7 +30,7 @@ export const createExpense = async (req: Request, res: Response) => {
 // Get all expenses
 export const getAllExpenses = async (req: Request, res: Response) => {
     try {
-        const result = await pool.query(`
+        const result = await pool.query<Expense>(`
             SELECT 
               *,
               (price_per_unit * quantity) as total_cost,
@@ -36,7 +38,8 @@ export const getAllExpenses = async (req: Request, res: Response) => {
             FROM expenses 
             ORDER BY created_at DESC
           `);
-        res.json(result.rows);
+        const expenses: Expense[] = result.rows;
+        res.json(expenses);
     } catch (error) {
         console.error('Error fetching expenses:', error);
         res.status(500).json({ error: 'Internal server error' });
@@ -47,14 +50,15 @@ export const getAllExpenses = async (req: Request, res: Response) => {
 export const getExpensesByCategory = async (req: Request, res: Response) => {
     const { id } = req.params;
     try {
-        const result = await pool.query(`
+        const result = await pool.query<Expense>(`
             SELECT 
               *,
               (price_per_unit * quantity) as total_cost,
               (price_per_unit * quantity - amount_paid) as remaining_amount
             FROM expenses 
             WHERE category_id = $1 ORDER BY created_at DESC`, [id]);
-        res.json(result.rows);
+        const expenses: Expense[] = result.rows;
+        res.json(expenses);
     } catch (error) {
         console.error('Error fetching expenses by category:', error);
         res.status(500).json({ error: 'Internal server error' });
@@ -66,7 +70,7 @@ export const updateExpense = async (req: Request, res: Response) => {
     const { id } = req.params;
     const { category_id, name, price_per_unit, quantity, amount_paid } = req.body;
     try {
-        const result = await pool.query(
+        const result = await pool.query<Expense>(
             `UPDATE expenses 
              SET category_id = $1, name = $2, price_per_unit = $3, quantity = $4, amount_paid = $5 
              WHERE id = $6 
@@ -78,7 +82,8 @@ export const updateExpense = async (req: Request, res: Response) => {
         if (result.rows.length === 0) {
             return res.status(404).json({ error: 'Expense not found' });
           }
-        res.json(result.rows[0]);
+        const updatedExpense: Expense = result.rows[0];
+        res.json(updatedExpense);
     } catch (error) {
         console.error('Error updating expense:', error);
         res.status(500).json({ error: 'Internal server error' });
@@ -100,10 +105,17 @@ export const deleteExpense = async (req: Request, res: Response) => {
     }
 };
 
+interface CategoryTotals {
+    category_id: number;
+    total_cost: number;
+    amount_paid: number;
+    remaining_amount: number;
+}
+
 // Get totals grouped by category
 export const getCategoryTotals = async (_req: Request, res: Response) => {
   try {
-    const result = await pool.query(
+    const result = await pool.query<CategoryTotals>(
       `SELECT 
          category_id,
          SUM(price_per_unit * quantity) as total_cost,
@@ -112,7 +124,8 @@ export const getCategoryTotals = async (_req: Request, res: Response) => {
        FROM expenses
        GROUP BY category_id`
     );
-    res.json(result.rows);
+    const categoryTotals: CategoryTotals[] = result.rows;
+    res.json(categoryTotals);
   } catch (error) {
     console.error('Error fetching category totals:', error);
     res.status(500).json({ error: 'Internal server error' });
