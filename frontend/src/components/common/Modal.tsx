@@ -39,10 +39,10 @@ function Modal({ isOpen, onClose, children }: ModalProps) {
       />
 
       {/* Modal Container */}
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-3">
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-3 overflow-y-auto">
         {/* Modal Content */}
         <div
-          className="bg-slate-900 text-gray-100 rounded-2xl shadow-elev-3 max-w-md w-full p-6 sm:p-4 transform transition-all border border-white/10"
+          className="bg-slate-900 text-gray-100 rounded-2xl shadow-elev-3 max-w-md w-full p-6 sm:p-4 transform transition-all border border-white/10 my-auto max-h-[90vh] overflow-y-auto"
           onClick={(e) => e.stopPropagation()} // מונע סגירה בלחיצה על המודל עצמו
         >
           {children}
