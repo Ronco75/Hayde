@@ -5,9 +5,10 @@ interface ButtonProps {
     type?: 'button' | 'submit';
     onClick?: () => void;
     disabled?: boolean;
+    className?: string;
 }
 
-function Button({ children, variant = 'primary', size = 'md', type = 'button', onClick, disabled = false }: ButtonProps) {
+function Button({ children, variant = 'primary', size = 'md', type = 'button', onClick, disabled = false, className = '' }: ButtonProps) {
     const variantClasses: Record<string, string> = {
         primary: "bg-primary-600 text-white hover:bg-primary-700 active:bg-primary-800 focus-visible:ring-primary-300",
         secondary: "bg-slate-700 text-white hover:bg-slate-600 active:bg-slate-800 focus-visible:ring-slate-500",
@@ -42,6 +43,7 @@ function Button({ children, variant = 'primary', size = 'md', type = 'button', o
         shadow-elev-2
         hover:shadow-elev-3
         ${variantClasses[variant]}
+        ${className}
     `.trim().replace(/\s+/g, ' ');
 
     return (

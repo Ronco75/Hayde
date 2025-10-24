@@ -1,4 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import DashboardPage from './pages/DashboardPage';
 import CategoriesPage from './pages/CategoriesPage';
 import ExpensesPage from './pages/ExpensesPage';
 import GroupsPage from './pages/GroupsPage';
@@ -8,7 +9,8 @@ function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<Navigate to="/categories" replace />} />
+        <Route path="/" element={<Navigate to="/dashboard" replace />} />
+        <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/categories" element={<CategoriesPage />} />
         <Route path="/categories/:categoryId/expenses" element={<ExpensesPage />} />
         <Route path="/groups" element={<GroupsPage />} />

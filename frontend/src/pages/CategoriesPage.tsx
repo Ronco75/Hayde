@@ -3,6 +3,7 @@ import { categoriesApi, expensesApi } from '../services/api';
 import type { Category, CategoryTotals } from '../types';
 import { formatNis } from '../utils/format';
 import Loading from '../components/common/Loading';
+import Header from '../components/common/Header';
 import CategoryCard from '../components/categories/CategoryCard';
 import Button from '../components/common/Button';
 import Modal from '../components/common/Modal';
@@ -111,9 +112,7 @@ function CategoriesPage() {
     <>
     <div className="min-h-screen bg-slate-950 p-6 sm:p-7">
       <div className="max-w-6xl mx-auto">
-        <h1 className="text-4xl sm:text-4xl md:text-3xl font-extrabold text-gray-100 mb-8 sm:mb-7 text-center leading-tight">
-          הוצאות
-        </h1>
+        <Header title="הוצאות" />
 
         {/* Overall totals summary */}
         <div className="bg-slate-900 border border-white/10 rounded-xl sm:rounded-lg shadow-elev-2 p-6 sm:p-7 mb-8 sm:mb-7">

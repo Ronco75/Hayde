@@ -62,8 +62,8 @@ function ExpensesPage() {
       // Compute totals for this category
       const totalsComputed = expensesResponse.data.reduce(
         (acc, exp) => {
-          const total = parseFloat(exp.total_cost);
-          const paid = parseFloat(exp.amount_paid);
+          const total = parseFloat(exp.total_cost || '0');
+          const paid = parseFloat(exp.amount_paid || '0');
           return {
             total_cost: acc.total_cost + total,
             amount_paid: acc.amount_paid + paid,
@@ -172,7 +172,7 @@ function ExpensesPage() {
   ) : (
     <div className="min-h-screen bg-slate-950 p-6 sm:p-7">
       <div className="max-w-6xl mx-auto">
-        <Header title={`הוצאות - ${category?.name || 'טוען...'}`} backTo="/categories" />
+        <Header title={`הוצאות - ${category?.name || 'טוען...'}`} />
 
         {/* Totals summary */}
         <div className="bg-slate-900 border border-white/10 rounded-xl sm:rounded-lg shadow-elev-2 p-6 sm:p-7 mb-8 sm:mb-7">
@@ -259,7 +259,7 @@ function ExpensesPage() {
                 <input
                   type="number"
                   value={formData.quantity}
-                  onChange={(e) => setFormData({ ...formData, quantity: parseInt(e.target.value) })}
+                  onChange={(e) => setFormData({ ...formData, quantity: parseInt(e.target.value) || 1 })}
                   className="
                     w-full px-4 py-3 text-base sm:text-sm sm:px-3 sm:py-2.5 rounded-lg sm:rounded-md
                     bg-slate-800 text-gray-100 placeholder:text-gray-400
@@ -278,7 +278,7 @@ function ExpensesPage() {
                   <input
                     type="number"
                     value={formData.amount_paid}
-                    onChange={(e) => setFormData({ ...formData, amount_paid: parseFloat(e.target.value) })}
+                    onChange={(e) => setFormData({ ...formData, amount_paid: parseFloat(e.target.value) || 0 })}
                     className="
                       w-full px-4 py-3 text-base sm:text-sm sm:px-3 sm:py-2.5 rounded-lg sm:rounded-md
                       bg-slate-800 text-gray-100 placeholder:text-gray-400
@@ -309,7 +309,7 @@ function ExpensesPage() {
 
             <div className="mt-6">
               <Button type="submit" variant="primary">
-                ✓ שמור הוצאה
+                 שמור הוצאה ✓
               </Button>
             </div>
           </form>
@@ -444,7 +444,7 @@ function ExpensesPage() {
                   <input
                     type="number"
                     value={editFormData.quantity}
-                    onChange={(e) => setEditFormData({ ...editFormData, quantity: parseInt(e.target.value) })}
+                    onChange={(e) => setEditFormData({ ...editFormData, quantity: parseInt(e.target.value) || 1 })}
                     className="
                       w-full px-4 py-3 text-base sm:text-sm sm:px-3 sm:py-2.5
                       rounded-lg sm:rounded-md
@@ -464,7 +464,7 @@ function ExpensesPage() {
                     <input
                       type="number"
                       value={editFormData.amount_paid}
-                      onChange={(e) => setEditFormData({ ...editFormData, amount_paid: parseFloat(e.target.value) })}
+                      onChange={(e) => setEditFormData({ ...editFormData, amount_paid: parseFloat(e.target.value) || 0 })}
                       className="
                         w-full px-4 py-3 text-base sm:text-sm sm:px-3 sm:py-2.5
                         rounded-lg sm:rounded-md
@@ -481,7 +481,7 @@ function ExpensesPage() {
                         type="button"
                         onClick={() => {
                           if (expenseToEdit) {
-                            const total = parseFloat(expenseToEdit.total_cost);
+                            const total = parseFloat(expenseToEdit.total_cost || '0');
                             setEditFormData({ ...editFormData, amount_paid: isNaN(total) ? 0 : total });
                           }
                         }}

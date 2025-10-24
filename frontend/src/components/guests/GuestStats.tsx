@@ -12,18 +12,18 @@ function GuestStats({ stats }: GuestStatsProps) {
         {/* Total Guests */}
         <div className="bg-slate-800/70 border border-white/10 rounded-md p-4">
           <div className="text-gray-300 text-sm">סה"כ מוזמנים</div>
-          <div className="text-primary-300 font-extrabold text-2xl">{stats.total_guests}</div>
+          <div className="text-primary-300 font-extrabold text-2xl">{stats.total_attendees}</div>
           <div className="text-gray-400 text-xs mt-1">
-            {stats.total_attendees} משתתפים
+            {stats.total_guests} רשומות
           </div>
         </div>
 
         {/* Confirmed */}
         <div className="bg-green-500/10 border border-white/10 rounded-md p-4">
           <div className="text-green-400 text-sm">אישרו הגעה</div>
-          <div className="text-green-300 font-extrabold text-2xl">{stats.confirmed_guests}</div>
+          <div className="text-green-300 font-extrabold text-2xl">{stats.confirmed_attendees}</div>
           <div className="text-green-400/70 text-xs mt-1">
-            {stats.confirmed_attendees} משתתפים
+            {stats.confirmed_guests} רשומות
           </div>
         </div>
 

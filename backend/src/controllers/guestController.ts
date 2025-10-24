@@ -5,12 +5,13 @@ import { Guest, RsvpStatus } from '../types/Guest';
 // Create a new guest
 export const createGuest = async (req: Request, res: Response) => {
     try {
-        const { 
-            name, 
-            phone_number, 
-            group_id, 
+        const {
+            name,
+            phone_number,
+            group_id,
             number_of_guests = 1,
-            notes 
+            rsvp_status = 'pending',
+            notes
         } = req.body;
 
         // Validate required fields
@@ -24,12 +25,20 @@ export const createGuest = async (req: Request, res: Response) => {
             return res.status(400).json({ error: 'Group ID is required' });
         }
 
+        // Validate RSVP status if provided
+        const validStatuses: RsvpStatus[] = ['pending', 'confirmed', 'declined', 'maybe'];
+        if (rsvp_status && !validStatuses.includes(rsvp_status)) {
+            return res.status(400).json({
+                error: 'Invalid RSVP status. Must be: pending, confirmed, declined, or maybe'
+            });
+        }
+
         // Insert into database
         const result = await pool.query<Guest>(
-            `INSERT INTO guests (name, phone_number, group_id, number_of_guests, notes)
-             VALUES ($1, $2, $3, $4, $5)
+            `INSERT INTO guests (name, phone_number, group_id, number_of_guests, rsvp_status, notes)
+             VALUES ($1, $2, $3, $4, $5, $6)
              RETURNING *`,
-            [name, phone_number, group_id, number_of_guests, notes]
+            [name, phone_number, group_id, number_of_guests, rsvp_status, notes]
         );
 
         const newGuest: Guest = result.rows[0];

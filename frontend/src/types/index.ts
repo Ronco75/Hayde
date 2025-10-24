@@ -110,6 +110,7 @@ export interface CreateGuestDto {
   phone_number: string;
   group_id: number;
   number_of_guests?: number;
+  rsvp_status?: RsvpStatus;
   notes?: string;
 }
 

@@ -117,7 +117,7 @@ function GuestsPage() {
   ) : (
     <div className="min-h-screen bg-slate-950 p-6">
       <div className="max-w-6xl mx-auto">
-        <Header title="מוזמנים" backTo="/" />
+        <Header title="מוזמנים" />
         
         {/* Guest Stats */}
         <GuestStats stats={stats} />
