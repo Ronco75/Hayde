@@ -1,7 +1,8 @@
-import axios from 'axios';
-import type { 
-  Category, 
-  Expense, 
+import axios, { AxiosError } from 'axios';
+import toast from 'react-hot-toast';
+import type {
+  Category,
+  Expense,
   CategoryTotals,
   Group,
   Guest,
@@ -10,10 +11,75 @@ import type {
   UpdateGroupDto,
   CreateGuestDto,
   UpdateGuestDto,
-  UpdateRsvpDto
+  UpdateRsvpDto,
+  CreateExpenseDto,
+  UpdateExpenseDto
 } from '../types';
 
 const API_URL = 'http://localhost:3000/api';
+
+/**
+ * Error response interface from backend
+ */
+interface ApiErrorResponse {
+  error: string;
+  details?: Record<string, string>;
+  statusCode: number;
+  timestamp: string;
+  path: string;
+}
+
+/**
+ * Axios response interceptor for error handling
+ * Transforms backend errors into user-friendly toast notifications
+ */
+axios.interceptors.response.use(
+  (response) => response, // Pass through successful responses
+  (error: AxiosError<ApiErrorResponse>) => {
+    // Handle network errors (no response from server)
+    if (!error.response) {
+      toast.error('שגיאת רשת - לא ניתן להתחבר לשרת');
+      return Promise.reject(error);
+    }
+
+    const { status, data } = error.response;
+
+    // Handle different HTTP status codes with user-friendly messages
+    switch (status) {
+      case 400: // Validation errors
+        if (data.details) {
+          // Show validation errors for specific fields
+          Object.entries(data.details).forEach(([field, message]) => {
+            toast.error(`${field}: ${message}`);
+          });
+        } else {
+          toast.error(data.error || 'שגיאת קלט - נתונים לא תקינים');
+        }
+        break;
+
+      case 404: // Not found
+        toast.error(data.error || 'המשאב המבוקש לא נמצא');
+        break;
+
+      case 409: // Conflict (e.g., duplicate, foreign key violation)
+        toast.error(data.error || 'קיימת התנגשות עם נתונים קיימים');
+        break;
+
+      case 422: // Unprocessable entity
+        toast.error(data.error || 'לא ניתן לבצע את הפעולה');
+        break;
+
+      case 500: // Server error
+        toast.error(data.error || 'שגיאת שרת - נסה שוב מאוחר יותר');
+        break;
+
+      default:
+        toast.error('אירעה שגיאה - נסה שוב');
+    }
+
+    return Promise.reject(error);
+  }
+);
 
 // ============= CATEGORIES API =============
 export const categoriesApi = {
@@ -32,10 +98,10 @@ export const expensesApi = {
 
     getTotals: () => axios.get<CategoryTotals[]>(`${API_URL}/expenses/totals`),
 
-    create: (expense: Omit<Expense, 'id' | 'created_at' | 'total_cost' | 'remaining_amount'>) => 
+    create: (expense: CreateExpenseDto) => 
       axios.post<Expense>(`${API_URL}/expenses`, expense),
 
-    update: (id: number, expense: Omit<Expense, 'id' | 'created_at' | 'total_cost' | 'remaining_amount'>) => 
+    update: (id: number, expense: UpdateExpenseDto) => 
       axios.put<Expense>(`${API_URL}/expenses/${id}`, expense),
 
     delete: (id: number) => 

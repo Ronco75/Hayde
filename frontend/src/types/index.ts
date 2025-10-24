@@ -68,18 +68,18 @@ export interface Category {
   export interface CreateExpenseDto {
     category_id: number;
     name: string;
-    price_per_unit: string;
+    price_per_unit: number;
     quantity?: number;
-    amount_paid?: string;
+    amount_paid?: number;
   }
-  
+
   // For updating an expense
   export interface UpdateExpenseDto {
     category_id: number;
     name: string;
-    price_per_unit: string;
+    price_per_unit: number;
     quantity: number;
-    amount_paid: string;
+    amount_paid: number;
   }
 
   // ============ Category DTOs ============

@@ -88,9 +88,9 @@ function ExpensesPage() {
       await expensesApi.create({
         category_id: parseInt(categoryId),
         name: formData.name,
-        price_per_unit: formData.price_per_unit,
+        price_per_unit: parseFloat(formData.price_per_unit as string) || 0,
         quantity: formData.quantity,
-        amount_paid: formData.amount_paid.toString(),
+        amount_paid: formData.amount_paid,
       });
 
       // Reset form and reload
@@ -148,9 +148,9 @@ function ExpensesPage() {
       const response = await expensesApi.update(expenseToEdit.id, {
         category_id: parseInt(categoryId),
         name: editFormData.name,
-        price_per_unit: editFormData.price_per_unit,
+        price_per_unit: parseFloat(editFormData.price_per_unit as string) || 0,
         quantity: editFormData.quantity,
-        amount_paid: editFormData.amount_paid.toString(),
+        amount_paid: editFormData.amount_paid,
       });
 
       // Update state with the updated expense

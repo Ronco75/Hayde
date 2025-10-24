@@ -5,6 +5,7 @@ import categoryRoutes from './routes/categoryRoutes';
 import expensesRoutes from './routes/expensesRoutes';
 import guestRoutes from './routes/guestRoutes';
 import groupRoutes from './routes/groupRoutes';
+import { errorHandler } from './middleware/errorHandler';
 
 const app = express();
 const port = 3000;
@@ -42,6 +43,8 @@ app.get('/', (req, res) => {
     res.json({ message: 'Hayde backend is running'});
 })
 
+// Error handling middleware - MUST be registered AFTER all routes
+app.use(errorHandler);
 
 // Start the server
 app.listen(port, () => {
