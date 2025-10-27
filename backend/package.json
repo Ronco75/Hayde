@@ -7,13 +7,18 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "ts-node src/server.ts",
     "dev": "nodemon --exec ts-node src/server.ts",
-    "migrate": "ts-node src/config/createTables.ts"
+    "migrate": "prisma migrate dev",
+    "prisma:generate": "prisma generate",
+    "prisma:studio": "prisma studio",
+    "prisma:push": "prisma db push",
+    "migrate:legacy": "ts-node src/config/createTables.ts"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
+    "@prisma/client": "^6.2.0",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
     "express": "^5.1.0",
@@ -26,6 +31,7 @@
     "@types/node": "^24.7.2",
     "@types/pg": "^8.15.5",
     "nodemon": "^3.1.10",
+    "prisma": "^6.2.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.3"
   }

@@ -1,6 +1,6 @@
 import express from 'express';
 import cors from 'cors';
-import pool from './config/db';
+import prisma from './config/db';
 import categoryRoutes from './routes/categoryRoutes';
 import expensesRoutes from './routes/expensesRoutes';
 import guestRoutes from './routes/guestRoutes';
@@ -23,15 +23,16 @@ app.use('/api/groups', groupRoutes);
 // Test database connection
 app.get('/api/health', async (req, res) => {
   try {
-    const result = await pool.query('SELECT NOW()');
-    res.json({ 
-      status: 'OK', 
-      database: 'Connected',
-      timestamp: result.rows[0].now 
+    // Test Prisma connection with a simple query
+    const result = await prisma.$queryRaw<Array<{ now: Date }>>`SELECT NOW()`;
+    res.json({
+      status: 'OK',
+      database: 'Connected with Prisma',
+      timestamp: result[0].now
     });
   } catch (error) {
-    res.status(500).json({ 
-      status: 'ERROR', 
+    res.status(500).json({
+      status: 'ERROR',
       database: 'Disconnected',
       error: error instanceof Error ? error.message : 'Unknown error'
     });

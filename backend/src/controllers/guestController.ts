@@ -1,8 +1,9 @@
 import { Request, Response } from 'express';
-import pool from '../config/db';
-import { Guest } from '../types/Guest';
-import { NotFoundError, ConflictError, DatabaseError } from '../errors/customErrors';
+import prisma from '../config/db';
+import { NotFoundError } from '../errors/customErrors';
+import { handlePrismaCreateError, handlePrismaUpdateError, handlePrismaDeleteError } from '../errors/prismaErrorHandler';
 import { CreateGuestInput, UpdateGuestInput } from '../validators/schemas';
+import { transformGuest, transformGuests } from '../utils/transformers';
 
 /**
  * Create a new guest
@@ -21,30 +22,21 @@ export const createGuest = async (req: Request, res: Response) => {
   } = req.body as CreateGuestInput;
 
   try {
-    // Insert into database
-    const result = await pool.query<Guest>(
-      `INSERT INTO guests (name, phone_number, group_id, number_of_guests, rsvp_status, notes)
-       VALUES ($1, $2, $3, $4, $5, $6)
-       RETURNING *`,
-      [name, phone_number, group_id, number_of_guests, rsvp_status, notes]
-    );
+    const newGuest = await prisma.guest.create({
+      data: {
+        name,
+        phoneNumber: phone_number,
+        groupId: group_id,
+        numberOfGuests: number_of_guests,
+        rsvpStatus: rsvp_status,
+        notes,
+      },
+    });
 
-    const newGuest: Guest = result.rows[0];
-    res.status(201).json(newGuest);
+    res.status(201).json(transformGuest(newGuest));
 
-  } catch (error: any) {
-    // Handle foreign key violation (invalid group_id)
-    if (error.code === '23503') {
-      throw new ConflictError(`Group with ID ${group_id} does not exist`);
-    }
-
-    // Handle unique constraint violation (duplicate phone number if we add unique constraint)
-    if (error.code === '23505') {
-      throw new ConflictError('A guest with this phone number already exists');
-    }
-
-    console.error('Database error creating guest:', error);
-    throw new DatabaseError('Failed to create guest');
+  } catch (error) {
+    handlePrismaCreateError(error, 'Guest');
   }
 };
 
@@ -54,16 +46,14 @@ export const createGuest = async (req: Request, res: Response) => {
  */
 export const getAllGuests = async (req: Request, res: Response) => {
   try {
-    const result = await pool.query<Guest>(
-      'SELECT * FROM guests ORDER BY created_at DESC'
-    );
+    const guests = await prisma.guest.findMany({
+      orderBy: { createdAt: 'desc' },
+    });
 
-    const guests: Guest[] = result.rows;
-    res.json(guests);
+    res.json(transformGuests(guests));
 
   } catch (error) {
-    console.error('Database error fetching guests:', error);
-    throw new DatabaseError('Failed to fetch guests');
+    handlePrismaCreateError(error, 'Guests');
   }
 };
 
@@ -75,17 +65,15 @@ export const getGuestsByGroup = async (req: Request, res: Response) => {
   const { groupId } = req.params;
 
   try {
-    const result = await pool.query<Guest>(
-      'SELECT * FROM guests WHERE group_id = $1 ORDER BY created_at DESC',
-      [groupId]
-    );
+    const guests = await prisma.guest.findMany({
+      where: { groupId: parseInt(groupId) },
+      orderBy: { createdAt: 'desc' },
+    });
 
-    const guests: Guest[] = result.rows;
-    res.json(guests);
+    res.json(transformGuests(guests));
 
   } catch (error) {
-    console.error('Database error fetching guests by group:', error);
-    throw new DatabaseError('Failed to fetch guests by group');
+    handlePrismaCreateError(error, 'Guests by group');
   }
 };
 
@@ -97,17 +85,15 @@ export const getGuestById = async (req: Request, res: Response) => {
   const { id } = req.params;
 
   try {
-    const result = await pool.query<Guest>(
-      'SELECT * FROM guests WHERE id = $1',
-      [id]
-    );
+    const guest = await prisma.guest.findUnique({
+      where: { id: parseInt(id) },
+    });
 
-    if (result.rows.length === 0) {
+    if (!guest) {
       throw new NotFoundError(`Guest with ID ${id} not found`);
     }
 
-    const guest: Guest = result.rows[0];
-    res.json(guest);
+    res.json(transformGuest(guest));
 
   } catch (error) {
     // Re-throw NotFoundError as-is
@@ -115,8 +101,7 @@ export const getGuestById = async (req: Request, res: Response) => {
       throw error;
     }
 
-    console.error('Database error fetching guest:', error);
-    throw new DatabaseError('Failed to fetch guest');
+    handlePrismaCreateError(error, 'Guest');
   }
 };
 
@@ -138,40 +123,22 @@ export const updateGuest = async (req: Request, res: Response) => {
   } = req.body as UpdateGuestInput;
 
   try {
-    const result = await pool.query<Guest>(
-      `UPDATE guests
-       SET name = $1, phone_number = $2, group_id = $3,
-           number_of_guests = $4, rsvp_status = $5, notes = $6
-       WHERE id = $7
-       RETURNING *`,
-      [name, phone_number, group_id, number_of_guests, rsvp_status, notes, id]
-    );
+    const updatedGuest = await prisma.guest.update({
+      where: { id: parseInt(id) },
+      data: {
+        name,
+        phoneNumber: phone_number,
+        groupId: group_id,
+        numberOfGuests: number_of_guests,
+        rsvpStatus: rsvp_status,
+        notes,
+      },
+    });
 
-    if (result.rows.length === 0) {
-      throw new NotFoundError(`Guest with ID ${id} not found`);
-    }
+    res.json(transformGuest(updatedGuest));
 
-    const updatedGuest: Guest = result.rows[0];
-    res.json(updatedGuest);
-
-  } catch (error: any) {
-    // Re-throw NotFoundError as-is
-    if (error instanceof NotFoundError) {
-      throw error;
-    }
-
-    // Handle foreign key violation (invalid group_id)
-    if (error.code === '23503') {
-      throw new ConflictError(`Group with ID ${group_id} does not exist`);
-    }
-
-    // Handle unique constraint violation
-    if (error.code === '23505') {
-      throw new ConflictError('A guest with this phone number already exists');
-    }
-
-    console.error('Database error updating guest:', error);
-    throw new DatabaseError('Failed to update guest');
+  } catch (error) {
+    handlePrismaUpdateError(error, 'Guest', id);
   }
 };
 
@@ -186,26 +153,15 @@ export const updateRsvpStatus = async (req: Request, res: Response) => {
   const { rsvp_status } = req.body;
 
   try {
-    const result = await pool.query<Guest>(
-      'UPDATE guests SET rsvp_status = $1 WHERE id = $2 RETURNING *',
-      [rsvp_status, id]
-    );
+    const updatedGuest = await prisma.guest.update({
+      where: { id: parseInt(id) },
+      data: { rsvpStatus: rsvp_status },
+    });
 
-    if (result.rows.length === 0) {
-      throw new NotFoundError(`Guest with ID ${id} not found`);
-    }
-
-    const updatedGuest: Guest = result.rows[0];
-    res.json(updatedGuest);
+    res.json(transformGuest(updatedGuest));
 
   } catch (error) {
-    // Re-throw NotFoundError as-is
-    if (error instanceof NotFoundError) {
-      throw error;
-    }
-
-    console.error('Database error updating RSVP status:', error);
-    throw new DatabaseError('Failed to update RSVP status');
+    handlePrismaUpdateError(error, 'Guest RSVP status', id);
   }
 };
 
@@ -219,26 +175,15 @@ export const markInvitationSent = async (req: Request, res: Response) => {
   const { id } = req.params;
 
   try {
-    const result = await pool.query<Guest>(
-      'UPDATE guests SET invitation_sent_at = NOW() WHERE id = $1 RETURNING *',
-      [id]
-    );
+    const updatedGuest = await prisma.guest.update({
+      where: { id: parseInt(id) },
+      data: { invitationSentAt: new Date() },
+    });
 
-    if (result.rows.length === 0) {
-      throw new NotFoundError(`Guest with ID ${id} not found`);
-    }
-
-    const updatedGuest: Guest = result.rows[0];
-    res.json(updatedGuest);
+    res.json(transformGuest(updatedGuest));
 
   } catch (error) {
-    // Re-throw NotFoundError as-is
-    if (error instanceof NotFoundError) {
-      throw error;
-    }
-
-    console.error('Database error marking invitation as sent:', error);
-    throw new DatabaseError('Failed to mark invitation as sent');
+    handlePrismaUpdateError(error, 'Guest invitation', id);
   }
 };
 
@@ -252,26 +197,15 @@ export const markReminderSent = async (req: Request, res: Response) => {
   const { id } = req.params;
 
   try {
-    const result = await pool.query<Guest>(
-      'UPDATE guests SET reminder_sent_at = NOW() WHERE id = $1 RETURNING *',
-      [id]
-    );
+    const updatedGuest = await prisma.guest.update({
+      where: { id: parseInt(id) },
+      data: { reminderSentAt: new Date() },
+    });
 
-    if (result.rows.length === 0) {
-      throw new NotFoundError(`Guest with ID ${id} not found`);
-    }
-
-    const updatedGuest: Guest = result.rows[0];
-    res.json(updatedGuest);
+    res.json(transformGuest(updatedGuest));
 
   } catch (error) {
-    // Re-throw NotFoundError as-is
-    if (error instanceof NotFoundError) {
-      throw error;
-    }
-
-    console.error('Database error marking reminder as sent:', error);
-    throw new DatabaseError('Failed to mark reminder as sent');
+    handlePrismaUpdateError(error, 'Guest reminder', id);
   }
 };
 
@@ -283,22 +217,14 @@ export const deleteGuest = async (req: Request, res: Response) => {
   const { id } = req.params;
 
   try {
-    const result = await pool.query('DELETE FROM guests WHERE id = $1', [id]);
-
-    if (result.rowCount === 0) {
-      throw new NotFoundError(`Guest with ID ${id} not found`);
-    }
+    await prisma.guest.delete({
+      where: { id: parseInt(id) },
+    });
 
     res.status(204).send();
 
   } catch (error) {
-    // Re-throw NotFoundError as-is
-    if (error instanceof NotFoundError) {
-      throw error;
-    }
-
-    console.error('Database error deleting guest:', error);
-    throw new DatabaseError('Failed to delete guest');
+    handlePrismaDeleteError(error, 'Guest', id);
   }
 };
 
@@ -310,22 +236,40 @@ export const deleteGuest = async (req: Request, res: Response) => {
  */
 export const getGuestStats = async (req: Request, res: Response) => {
   try {
-    const result = await pool.query(`
-      SELECT
-        COUNT(*) as total_guests,
-        SUM(number_of_guests) as total_attendees,
-        COUNT(CASE WHEN rsvp_status = 'confirmed' THEN 1 END) as confirmed_guests,
-        SUM(CASE WHEN rsvp_status = 'confirmed' THEN number_of_guests ELSE 0 END) as confirmed_attendees,
-        COUNT(CASE WHEN rsvp_status = 'declined' THEN 1 END) as declined_guests,
-        COUNT(CASE WHEN rsvp_status = 'pending' THEN 1 END) as pending_guests,
-        COUNT(CASE WHEN invitation_sent_at IS NOT NULL THEN 1 END) as invitations_sent
-      FROM guests
-    `);
+    // Get all guests to calculate statistics
+    const allGuests = await prisma.guest.findMany({
+      select: {
+        numberOfGuests: true,
+        rsvpStatus: true,
+        invitationSentAt: true,
+      },
+    });
 
-    res.json(result.rows[0]);
+    // Calculate statistics
+    const totalGuests = allGuests.length;
+    const totalAttendees = allGuests.reduce((sum, guest) => sum + guest.numberOfGuests, 0);
+
+    const confirmedGuests = allGuests.filter(g => g.rsvpStatus === 'confirmed');
+    const confirmedGuestsCount = confirmedGuests.length;
+    const confirmedAttendees = confirmedGuests.reduce((sum, guest) => sum + guest.numberOfGuests, 0);
+
+    const declinedGuests = allGuests.filter(g => g.rsvpStatus === 'declined').length;
+    const pendingGuests = allGuests.filter(g => g.rsvpStatus === 'pending').length;
+    const invitationsSent = allGuests.filter(g => g.invitationSentAt !== null).length;
+
+    const stats = {
+      total_guests: totalGuests,
+      total_attendees: totalAttendees,
+      confirmed_guests: confirmedGuestsCount,
+      confirmed_attendees: confirmedAttendees,
+      declined_guests: declinedGuests,
+      pending_guests: pendingGuests,
+      invitations_sent: invitationsSent,
+    };
+
+    res.json(stats);
 
   } catch (error) {
-    console.error('Database error fetching guest statistics:', error);
-    throw new DatabaseError('Failed to fetch guest statistics');
+    handlePrismaCreateError(error, 'Guest statistics');
   }
 };

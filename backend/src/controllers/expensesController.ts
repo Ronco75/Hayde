@@ -1,8 +1,9 @@
 import { Request, Response } from 'express';
-import pool from '../config/db';
-import { Expense } from '../types/Expense';
-import { NotFoundError, ConflictError, DatabaseError } from '../errors/customErrors';
+import prisma from '../config/db';
+import { Decimal } from '@prisma/client/runtime/library';
+import { handlePrismaCreateError, handlePrismaUpdateError, handlePrismaDeleteError } from '../errors/prismaErrorHandler';
 import { CreateExpenseInput, UpdateExpenseInput } from '../validators/schemas';
+import { transformExpense, transformExpenses } from '../utils/transformers';
 
 /**
  * Create a new expense
@@ -14,26 +15,20 @@ export const createExpense = async (req: Request, res: Response) => {
   const { category_id, name, price_per_unit, quantity, amount_paid } = req.body as CreateExpenseInput;
 
   try {
-    const result = await pool.query<Expense>(
-      `INSERT INTO expenses (category_id, name, price_per_unit, quantity, amount_paid)
-       VALUES ($1, $2, $3, $4, $5)
-       RETURNING *,
-         (price_per_unit * quantity) as total_cost,
-         (price_per_unit * quantity - amount_paid) as remaining_amount`,
-      [category_id, name, price_per_unit, quantity, amount_paid]
-    );
+    const newExpense = await prisma.expense.create({
+      data: {
+        categoryId: category_id,
+        name,
+        pricePerUnit: price_per_unit,
+        quantity,
+        amountPaid: amount_paid,
+      },
+    });
 
-    const newExpense: Expense = result.rows[0];
-    res.status(201).json(newExpense);
+    res.status(201).json(transformExpense(newExpense));
 
-  } catch (error: any) {
-    // Handle foreign key violation (invalid category_id)
-    if (error.code === '23503') {
-      throw new ConflictError(`Category with ID ${category_id} does not exist`);
-    }
-
-    console.error('Database error creating expense:', error);
-    throw new DatabaseError('Failed to create expense');
+  } catch (error) {
+    handlePrismaCreateError(error, 'Expense');
   }
 };
 
@@ -43,21 +38,14 @@ export const createExpense = async (req: Request, res: Response) => {
  */
 export const getAllExpenses = async (req: Request, res: Response) => {
   try {
-    const result = await pool.query<Expense>(`
-      SELECT
-        *,
-        (price_per_unit * quantity) as total_cost,
-        (price_per_unit * quantity - amount_paid) as remaining_amount
-      FROM expenses
-      ORDER BY created_at DESC
-    `);
+    const expenses = await prisma.expense.findMany({
+      orderBy: { createdAt: 'desc' },
+    });
 
-    const expenses: Expense[] = result.rows;
-    res.json(expenses);
+    res.json(transformExpenses(expenses));
 
   } catch (error) {
-    console.error('Database error fetching expenses:', error);
-    throw new DatabaseError('Failed to fetch expenses');
+    handlePrismaCreateError(error, 'Expenses');
   }
 };
 
@@ -69,23 +57,15 @@ export const getExpensesByCategory = async (req: Request, res: Response) => {
   const { id } = req.params;
 
   try {
-    const result = await pool.query<Expense>(
-      `SELECT
-        *,
-        (price_per_unit * quantity) as total_cost,
-        (price_per_unit * quantity - amount_paid) as remaining_amount
-      FROM expenses
-      WHERE category_id = $1
-      ORDER BY created_at DESC`,
-      [id]
-    );
+    const expenses = await prisma.expense.findMany({
+      where: { categoryId: parseInt(id) },
+      orderBy: { createdAt: 'desc' },
+    });
 
-    const expenses: Expense[] = result.rows;
-    res.json(expenses);
+    res.json(transformExpenses(expenses));
 
   } catch (error) {
-    console.error('Database error fetching expenses by category:', error);
-    throw new DatabaseError('Failed to fetch expenses by category');
+    handlePrismaCreateError(error, 'Expenses by category');
   }
 };
 
@@ -100,36 +80,21 @@ export const updateExpense = async (req: Request, res: Response) => {
   const { category_id, name, price_per_unit, quantity, amount_paid } = req.body as UpdateExpenseInput;
 
   try {
-    const result = await pool.query<Expense>(
-      `UPDATE expenses
-       SET category_id = $1, name = $2, price_per_unit = $3, quantity = $4, amount_paid = $5
-       WHERE id = $6
-       RETURNING *,
-         (price_per_unit * quantity) as total_cost,
-         (price_per_unit * quantity - amount_paid) as remaining_amount`,
-      [category_id, name, price_per_unit, quantity, amount_paid, id]
-    );
+    const updatedExpense = await prisma.expense.update({
+      where: { id: parseInt(id) },
+      data: {
+        categoryId: category_id,
+        name,
+        pricePerUnit: price_per_unit,
+        quantity,
+        amountPaid: amount_paid,
+      },
+    });
 
-    if (result.rows.length === 0) {
-      throw new NotFoundError(`Expense with ID ${id} not found`);
-    }
+    res.json(transformExpense(updatedExpense));
 
-    const updatedExpense: Expense = result.rows[0];
-    res.json(updatedExpense);
-
-  } catch (error: any) {
-    // Re-throw NotFoundError as-is
-    if (error instanceof NotFoundError) {
-      throw error;
-    }
-
-    // Handle foreign key violation (invalid category_id)
-    if (error.code === '23503') {
-      throw new ConflictError(`Category with ID ${category_id} does not exist`);
-    }
-
-    console.error('Database error updating expense:', error);
-    throw new DatabaseError('Failed to update expense');
+  } catch (error) {
+    handlePrismaUpdateError(error, 'Expense', id);
   }
 };
 
@@ -141,22 +106,14 @@ export const deleteExpense = async (req: Request, res: Response) => {
   const { id } = req.params;
 
   try {
-    const result = await pool.query('DELETE FROM expenses WHERE id = $1', [id]);
-
-    if (result.rowCount === 0) {
-      throw new NotFoundError(`Expense with ID ${id} not found`);
-    }
+    await prisma.expense.delete({
+      where: { id: parseInt(id) },
+    });
 
     res.status(204).send();
 
-  } catch (error: any) {
-    // Re-throw NotFoundError as-is
-    if (error instanceof NotFoundError) {
-      throw error;
-    }
-
-    console.error('Database error deleting expense:', error);
-    throw new DatabaseError('Failed to delete expense');
+  } catch (error) {
+    handlePrismaDeleteError(error, 'Expense', id);
   }
 };
 
@@ -178,21 +135,52 @@ interface CategoryTotals {
  */
 export const getCategoryTotals = async (_req: Request, res: Response) => {
   try {
-    const result = await pool.query<CategoryTotals>(
-      `SELECT
-         category_id,
-         SUM(price_per_unit * quantity) as total_cost,
-         SUM(amount_paid) as amount_paid,
-         SUM(price_per_unit * quantity - amount_paid) as remaining_amount
-       FROM expenses
-       GROUP BY category_id`
-    );
+    // Use Prisma groupBy with aggregate
+    const groupedExpenses = await prisma.expense.groupBy({
+      by: ['categoryId'],
+      _sum: {
+        amountPaid: true,
+      },
+    });
 
-    const categoryTotals: CategoryTotals[] = result.rows;
+    // Get all expenses to calculate total_cost manually (since it's a computed field)
+    const allExpenses = await prisma.expense.findMany({
+      select: {
+        categoryId: true,
+        pricePerUnit: true,
+        quantity: true,
+        amountPaid: true,
+      },
+    });
+
+    // Calculate totals by category
+    const totalsMap = new Map<number, CategoryTotals>();
+
+    allExpenses.forEach((expense) => {
+      const categoryId = expense.categoryId;
+      const pricePerUnit = expense.pricePerUnit instanceof Decimal ? expense.pricePerUnit.toNumber() : Number(expense.pricePerUnit);
+      const amountPaid = expense.amountPaid instanceof Decimal ? expense.amountPaid.toNumber() : Number(expense.amountPaid);
+      const totalCost = pricePerUnit * expense.quantity;
+
+      if (!totalsMap.has(categoryId)) {
+        totalsMap.set(categoryId, {
+          category_id: categoryId,
+          total_cost: 0,
+          amount_paid: 0,
+          remaining_amount: 0,
+        });
+      }
+
+      const totals = totalsMap.get(categoryId)!;
+      totals.total_cost += totalCost;
+      totals.amount_paid += amountPaid;
+      totals.remaining_amount = totals.total_cost - totals.amount_paid;
+    });
+
+    const categoryTotals = Array.from(totalsMap.values());
     res.json(categoryTotals);
 
   } catch (error) {
-    console.error('Database error fetching category totals:', error);
-    throw new DatabaseError('Failed to fetch category totals');
+    handlePrismaCreateError(error, 'Category totals');
   }
 };

@@ -1,24 +1,37 @@
-import { Pool } from 'pg';
+import { PrismaClient } from '@prisma/client';
 import dotenv from 'dotenv';
 
 dotenv.config();
 
-const pool = new Pool({
-    host: process.env.DB_HOST,
-    port: parseInt(process.env.DB_PORT || '5432'),
-    database: process.env.DB_NAME,
-    user: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-});
+// PrismaClient singleton pattern for optimal connection pooling
+const prismaClientSingleton = () => {
+  return new PrismaClient({
+    log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
+  });
+};
+
+declare global {
+  var prismaGlobal: undefined | ReturnType<typeof prismaClientSingleton>;
+}
+
+const prisma = globalThis.prismaGlobal ?? prismaClientSingleton();
+
+if (process.env.NODE_ENV !== 'production') {
+  globalThis.prismaGlobal = prisma;
+}
 
 // Test connection
-pool.connect((err, client, release) => {
-    if (err) {
-      console.error('Error connecting to the database:', err.stack);
-    } else {
-      console.log('✅ Connected to PostgreSQL database successfully!');
-      release();
-    }
+prisma.$connect()
+  .then(() => {
+    console.log('✅ Connected to PostgreSQL database successfully with Prisma!');
+  })
+  .catch((err) => {
+    console.error('Error connecting to the database:', err);
   });
 
-export default pool;
+// Graceful shutdown
+process.on('beforeExit', async () => {
+  await prisma.$disconnect();
+});
+
+export default prisma;

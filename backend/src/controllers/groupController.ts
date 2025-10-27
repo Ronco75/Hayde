@@ -1,8 +1,8 @@
 import { Request, Response } from 'express';
-import pool from '../config/db';
-import { Group } from '../types/Group';
-import { NotFoundError, ConflictError, DatabaseError } from '../errors/customErrors';
+import prisma from '../config/db';
+import { handlePrismaCreateError, handlePrismaUpdateError, handlePrismaDeleteError } from '../errors/prismaErrorHandler';
 import { CreateGroupInput, UpdateGroupInput } from '../validators/schemas';
+import { transformGroup, transformGroups } from '../utils/transformers';
 
 /**
  * Create a new group
@@ -14,23 +14,14 @@ export const createGroup = async (req: Request, res: Response) => {
   const { name } = req.body as CreateGroupInput;
 
   try {
-    // Insert into database
-    const result = await pool.query<Group>(
-      'INSERT INTO groups (name) VALUES ($1) RETURNING *',
-      [name]
-    );
+    const newGroup = await prisma.group.create({
+      data: { name },
+    });
 
-    const newGroup: Group = result.rows[0];
-    res.status(201).json(newGroup);
+    res.status(201).json(transformGroup(newGroup));
 
-  } catch (error: any) {
-    // Handle unique constraint violation (duplicate group name if we add unique constraint)
-    if (error.code === '23505') {
-      throw new ConflictError('Group with this name already exists');
-    }
-
-    console.error('Database error creating group:', error);
-    throw new DatabaseError('Failed to create group');
+  } catch (error) {
+    handlePrismaCreateError(error, 'Group');
   }
 };
 
@@ -40,12 +31,14 @@ export const createGroup = async (req: Request, res: Response) => {
  */
 export const getAllGroups = async (req: Request, res: Response) => {
   try {
-    const result = await pool.query<Group>('SELECT * FROM groups ORDER BY created_at DESC');
-    const groups: Group[] = result.rows;
-    res.json(groups);
+    const groups = await prisma.group.findMany({
+      orderBy: { createdAt: 'desc' },
+    });
+
+    res.json(transformGroups(groups));
+
   } catch (error) {
-    console.error('Database error fetching groups:', error);
-    throw new DatabaseError('Failed to fetch groups');
+    handlePrismaCreateError(error, 'Groups');
   }
 };
 
@@ -60,32 +53,15 @@ export const updateGroup = async (req: Request, res: Response) => {
   const { name } = req.body as UpdateGroupInput;
 
   try {
-    // Update in database
-    const result = await pool.query<Group>(
-      'UPDATE groups SET name = $1 WHERE id = $2 RETURNING *',
-      [name, id]
-    );
+    const updatedGroup = await prisma.group.update({
+      where: { id: parseInt(id) },
+      data: { name },
+    });
 
-    if (result.rowCount === 0) {
-      throw new NotFoundError(`Group with ID ${id} not found`);
-    }
+    res.json(transformGroup(updatedGroup));
 
-    const updatedGroup: Group = result.rows[0];
-    res.json(updatedGroup);
-
-  } catch (error: any) {
-    // Re-throw NotFoundError as-is
-    if (error instanceof NotFoundError) {
-      throw error;
-    }
-
-    // Handle unique constraint violation
-    if (error.code === '23505') {
-      throw new ConflictError('Group with this name already exists');
-    }
-
-    console.error('Database error updating group:', error);
-    throw new DatabaseError('Failed to update group');
+  } catch (error) {
+    handlePrismaUpdateError(error, 'Group', id);
   }
 };
 
@@ -99,27 +75,13 @@ export const deleteGroup = async (req: Request, res: Response) => {
   const { id } = req.params;
 
   try {
-    // Delete from database
-    const result = await pool.query('DELETE FROM groups WHERE id = $1', [id]);
-
-    if (result.rowCount === 0) {
-      throw new NotFoundError(`Group with ID ${id} not found`);
-    }
+    await prisma.group.delete({
+      where: { id: parseInt(id) },
+    });
 
     res.status(204).send();
 
-  } catch (error: any) {
-    // Re-throw NotFoundError as-is
-    if (error instanceof NotFoundError) {
-      throw error;
-    }
-
-    // Handle foreign key constraint violation
-    if (error.code === '23503') {
-      throw new ConflictError('Cannot delete group with existing guests. Delete or reassign the guests first.');
-    }
-
-    console.error('Database error deleting group:', error);
-    throw new DatabaseError('Failed to delete group');
+  } catch (error) {
+    handlePrismaDeleteError(error, 'Group', id);
   }
 };
