@@ -1,15 +1,20 @@
-import type { Group } from '../../types';
+import type { Group, Guest } from '../../types';
 import GroupCard from './GroupCard';
 import Button from '../common/Button';
 
 interface GroupListProps {
     groups: Group[];
+    guests?: Guest[];
     onEdit: (group: Group) => void;
     onDelete: (groupId: number) => void;
     onAdd: () => void;
 }
 
-function GroupList({ groups, onEdit, onDelete, onAdd }: GroupListProps) {
+function GroupList({ groups, guests = [], onEdit, onDelete, onAdd }: GroupListProps) {
+    // Calculate guest count per group
+    const getGuestCount = (groupId: number) => {
+        return guests.filter(guest => guest.group_id === groupId).length;
+    };
     return (
         <div>
             {/* Add new group button */}
@@ -31,9 +36,15 @@ function GroupList({ groups, onEdit, onDelete, onAdd }: GroupListProps) {
                 </p>
                 </div>
             ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 sm:gap-6 md:gap-5">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {groups.map((group) => (
-                        <GroupCard key={group.id} group={group} onEdit={onEdit} onDelete={onDelete} />
+                        <GroupCard
+                            key={group.id}
+                            group={group}
+                            guestCount={getGuestCount(group.id)}
+                            onEdit={onEdit}
+                            onDelete={onDelete}
+                        />
                     ))}
                 </div>
             )}

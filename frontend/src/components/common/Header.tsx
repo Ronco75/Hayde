@@ -12,7 +12,6 @@ function Header({ title }: HeaderProps) {
   const navigationItems = [
     { path: '/dashboard', label: 'דף בית' },
     { path: '/categories', label: 'הוצאות' },
-    { path: '/groups', label: 'קבוצות' },
     { path: '/guests', label: 'מוזמנים' },
   ];
 

@@ -12,6 +12,7 @@ import Header from '../components/common/Header';
 import GuestStats from '../components/guests/GuestStats';
 import GuestList from '../components/guests/GuestList';
 import GuestForm from '../components/guests/GuestForm';
+import ManageGroupsModal from '../components/guests/ManageGroupsModal';
 import Modal from '../components/common/Modal';
 import Button from '../components/common/Button';
 import toast from 'react-hot-toast';
@@ -36,6 +37,7 @@ function GuestsPage() {
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showImportModal, setShowImportModal] = useState(false);
+  const [showManageGroupsModal, setShowManageGroupsModal] = useState(false);
   const [guestToEdit, setGuestToEdit] = useState<Guest | null>(null);
   const [guestToDelete, setGuestToDelete] = useState<Guest | null>(null);
   const [fileToImport, setFileToImport] = useState<File | null>(null);
@@ -128,6 +130,10 @@ function GuestsPage() {
     setShowImportModal(true);
   };
 
+  const handleManageGroups = () => {
+    setShowManageGroupsModal(true);
+  };
+
   const handleUploadAndPreview = async () => {
     if (!fileToImport) return;
 
@@ -215,13 +221,14 @@ function GuestsPage() {
         <GuestStats stats={stats} />
 
         {/* Guest List */}
-        <GuestList 
+        <GuestList
           guests={guests}
           groups={groups}
           onEdit={handleEdit}
           onDelete={handleDelete}
           onAdd={handleAdd}
           onImport={handleImport}
+          onManageGroups={handleManageGroups}
         />
 
         {/* Add Guest Modal */}
@@ -481,7 +488,16 @@ function GuestsPage() {
     )}
   </div>
 </Modal>
-        
+
+        {/* Manage Groups Modal */}
+        <ManageGroupsModal
+          isOpen={showManageGroupsModal}
+          onClose={() => setShowManageGroupsModal(false)}
+          groups={groups}
+          guests={guests}
+          onGroupsChange={loadData}
+        />
+
       </div>
     </div>
   );

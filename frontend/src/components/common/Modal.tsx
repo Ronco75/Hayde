@@ -33,13 +33,13 @@ function Modal({ isOpen, onClose, children }: ModalProps) {
   return (
     <>
       {/* Backdrop */}
-      <div
-        className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 transition-opacity"
-        onClick={onClose}
-      />
+      <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 transition-opacity" />
 
-      {/* Modal Container */}
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-3 overflow-y-auto">
+      {/* Modal Container - Click outside to close */}
+      <div
+        className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-3 overflow-y-auto"
+        onClick={onClose}
+      >
         {/* Modal Content */}
         <div
           className="bg-slate-900 text-gray-100 rounded-2xl shadow-elev-3 max-w-md w-full p-6 sm:p-4 transform transition-all border border-white/10 my-auto max-h-[90vh] overflow-y-auto"

@@ -3,7 +3,6 @@ import { Toaster } from 'react-hot-toast';
 import DashboardPage from './pages/DashboardPage';
 import CategoriesPage from './pages/CategoriesPage';
 import ExpensesPage from './pages/ExpensesPage';
-import GroupsPage from './pages/GroupsPage';
 import GuestsPage from './pages/GuestsPage';
 import NotFoundPage from './pages/NotFoundPage';
 
@@ -47,7 +46,6 @@ function App() {
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/categories" element={<CategoriesPage />} />
           <Route path="/categories/:categoryId/expenses" element={<ExpensesPage />} />
-          <Route path="/groups" element={<GroupsPage />} />
           <Route path="/guests" element={<GuestsPage />} />
           {/* 404 Catch-all route - must be last */}
           <Route path="*" element={<NotFoundPage />} />
