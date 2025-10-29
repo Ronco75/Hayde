@@ -7,6 +7,7 @@ import Header from '../components/common/Header';
 import CategoryCard from '../components/categories/CategoryCard';
 import Button from '../components/common/Button';
 import Modal from '../components/common/Modal';
+import toast from 'react-hot-toast';
 
 function CategoriesPage() {
   const [categories, setCategories] = useState<Category[]>([]);
@@ -54,8 +55,9 @@ function CategoriesPage() {
       await categoriesApi.create(newCategoryName);
       setNewCategoryName('');
       loadCategories(); // Reload the list
-    } catch (error) {
-      console.error('Error creating category:', error);
+    } catch (err) {
+      console.error('Error creating category:', err);
+      toast.error('שגיאה ביצירת הקטגוריה, אנא נסה שנית.');
     }
   };
 

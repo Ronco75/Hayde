@@ -62,7 +62,61 @@ export interface Category {
     invitations_sent: number;
   }
 
-  // ============ DTOs ============
+  //Types for Import
+  export interface ImportPreviewResponse {
+    summary: {
+      total: number;
+      valid: number;
+      duplicates: number;
+      errors: number;
+    };
+    valid: ParsedGuest[];
+    duplicates: Array<{
+      newGuest: ParsedGuest;
+      existingGuest: Guest;
+    }>;
+    errors: Array<{
+      row: number;
+      field: string;
+      value: any;
+      message: string;
+    }>;
+  }
+
+  export interface ImportConfirmRequest {
+    guests: GuestToImport[];
+    replaceExisting: boolean;
+  }
+
+  export interface ImportConfirmResponse {
+    success: boolean;
+    message: string;
+    results: {
+      created: number;
+      updated: number;
+      failed: number;
+    };
+  }
+
+  // Types for Guest to Import
+export interface GuestToImport {
+  groupName: string;
+  name: string;
+  phoneNumber: string;
+  numberOfGuests: number;
+}
+
+// Guest parsed from Excel (before saving)
+export interface ParsedGuest {
+  groupName: string;
+  name: string;
+  phoneNumber: string;
+  numberOfGuests: number;
+  rowNumber: number;
+}
+
+
+  // ========================= DTOs =========================
   // ============ Expense DTOs ============
   // For creating a new expense
   export interface CreateExpenseDto {

@@ -135,6 +135,38 @@ export const updateRsvpStatusSchema = z.object({
   rsvp_status: rsvpStatusSchema,
 });
 
+// ============= IMPORT SCHEMAS =============
+
+/**
+ * Schema for a single guest in the import confirmation request
+ */
+const importGuestSchema = z.object({
+  groupName: z.string()
+    .min(1, 'שם הקבוצה חסר')
+    .max(255, 'שם הקבוצה ארוך מדי'),
+  name: z.string()
+    .min(1, 'שם האורח חסר')
+    .max(255, 'שם האורח ארוך מדי'),
+  phoneNumber: z.string()
+    .min(1, 'מספר טלפון חסר')
+    .regex(phoneRegex, 'מספר טלפון לא תקין'),
+  numberOfGuests: z.number()
+    .int('מספר האורחים חייב להיות מספר שלם')
+    .min(1, 'יש להזין לפחות אורח אחד')
+    .max(20, 'מספר האורחים לא יכול לעלות על 20'),
+});
+
+/**
+ * Schema for the import confirmation request body
+ */
+export const confirmImportSchema = z.object({
+  guests: z.array(importGuestSchema)
+    .min(1, 'יש לשלוח לפחות מוזמן אחד'),
+  replaceExisting: z.boolean().optional().default(false),
+});
+
+export type ConfirmImportInput = z.infer<typeof confirmImportSchema>;
+
 /**
  * Type exports for use in controllers
  * These infer TypeScript types from the Zod schemas
