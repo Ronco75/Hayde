@@ -13,7 +13,10 @@ import type {
   UpdateGuestDto,
   UpdateRsvpDto,
   CreateExpenseDto,
-  UpdateExpenseDto
+  UpdateExpenseDto,
+  ImportPreviewResponse,
+  ImportConfirmRequest,
+  ImportConfirmResponse
 } from '../types';
 
 const API_URL = 'http://localhost:3000/api';
@@ -168,4 +171,26 @@ export const guestsApi = {
     // Delete a guest
     delete: (id: number) => 
       axios.delete<void>(`${API_URL}/guests/${id}`),
+};
+
+// ============= IMPORT API =============
+export const importApi = {
+  // Upload and preview Excel file
+  preview: (file: File) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    return axios.post<ImportPreviewResponse>(
+      `${API_URL}/import/preview`, 
+      formData,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      }
+    );
+  },
+
+  // Confirm and execute the import
+  confirm: (data: ImportConfirmRequest) => 
+    axios.post<ImportConfirmResponse>(`${API_URL}/import/confirm`, data),
 };

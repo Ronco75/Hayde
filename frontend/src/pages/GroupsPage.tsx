@@ -7,6 +7,7 @@ import GroupList from '../components/groups/GroupList';
 import GroupForm from '../components/groups/GroupForm';
 import Modal from '../components/common/Modal';
 import Button from '../components/common/Button';
+import toast from 'react-hot-toast';
 
 function GroupsPage() {
   const [groups, setGroups] = useState<Group[]>([]);
@@ -26,8 +27,9 @@ function GroupsPage() {
     try {
       const response = await groupsApi.getAll();
       setGroups(response.data);
-    } catch (error) {
-      console.error('Error loading groups:', error);
+    } catch (err) {
+      console.error('Error loading groups:', err);
+      toast.error('שגיאה בטעינת הקבוצות, אנא נסה שנית.');
     } finally {
       setLoading(false);
     }
@@ -53,8 +55,9 @@ function GroupsPage() {
       await groupsApi.create({ name });
       setShowAddModal(false);
       await loadGroups();
-    } catch (error) {
-      console.error('Error creating group:', error);
+    } catch (err) {
+      console.error('Error creating group:', err);
+      toast.error('שגיאה ביצירת הקבוצה, אנא נסה שנית.');
     }
   };
 
@@ -65,8 +68,9 @@ function GroupsPage() {
       setShowEditModal(false);
       setGroupToEdit(null);
       await loadGroups();
-    } catch (error) {
-      console.error('Error updating group:', error);
+    } catch (err) {
+      console.error('Error updating group:', err);
+      toast.error('שגיאה בעדכון הקבוצה, אנא נסה שנית.');
     }
   };
 
@@ -77,8 +81,9 @@ function GroupsPage() {
       setShowDeleteModal(false);
       setGroupToDelete(null);
       await loadGroups();
-    } catch (error) {
-      console.error('Error deleting group:', error);
+    } catch (err) {
+      console.error('Error deleting group:', err);
+      toast.error('שגיאה במחיקת הקבוצה, אנא נסה שנית.');
     }
   };
 

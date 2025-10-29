@@ -6,6 +6,7 @@ import Header from '../components/common/Header';
 import GuestStatsComponent from '../components/guests/GuestStats';
 import QuickSummaryCards from '../components/dashboard/QuickSummaryCards';
 import ExpensesPieChart from '../components/dashboard/ExpensesPieChart';
+import toast from 'react-hot-toast';
 
 function DashboardPage() {
   const [stats, setStats] = useState<GuestStatsType>({
@@ -27,8 +28,9 @@ function DashboardPage() {
     try {
       const statsResponse = await guestsApi.getStats();
       setStats(statsResponse.data);
-    } catch (error) {
-      console.error('Error loading dashboard data:', error);
+    } catch (err) {
+      console.error('Error loading dashboard data:', err);
+      toast.error('שגיאה בטעינת הדף, אנא נסה שנית.');
     } finally {
       setLoading(false);
     }

@@ -5,6 +5,7 @@ import categoryRoutes from './routes/categoryRoutes';
 import expensesRoutes from './routes/expensesRoutes';
 import guestRoutes from './routes/guestRoutes';
 import groupRoutes from './routes/groupRoutes';
+import importRoutes from './routes/importRoutes';
 import { errorHandler } from './middleware/errorHandler';
 
 const app = express();
@@ -19,6 +20,7 @@ app.use('/api/categories', categoryRoutes);
 app.use('/api/expenses', expensesRoutes);
 app.use('/api/guests', guestRoutes);
 app.use('/api/groups', groupRoutes);
+app.use('/api/import', importRoutes);
 
 // Test database connection
 app.get('/api/health', async (req, res) => {

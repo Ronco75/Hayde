@@ -9,9 +9,10 @@ interface GuestListProps {
   onEdit: (guest: Guest) => void;
   onDelete: (guestId: number) => void;
   onAdd: () => void;
+  onImport: () => void;
 }
 
-function GuestList({ guests, groups, onEdit, onDelete, onAdd }: GuestListProps) {
+function GuestList({ guests, groups, onEdit, onDelete, onAdd, onImport }: GuestListProps) {
   const [filterGroup, setFilterGroup] = useState<number | null>(null);
   const [filterRsvp, setFilterRsvp] = useState<RsvpStatus | null>(null);
 
@@ -102,12 +103,15 @@ function GuestList({ guests, groups, onEdit, onDelete, onAdd }: GuestListProps) 
           </div>
         </div>
 
-        {/* Add Guest Button */}
-        <div className="flex justify-end">
-          <Button type="button" variant="primary" onClick={onAdd}>
-            + הוספת מוזמן
-          </Button>
-        </div>
+      {/* Action Buttons */}
+      <div className="flex justify-end gap-4">
+        <Button type="button" variant="secondary" onClick={onImport}>
+          ייבא מאקסל 📊 
+        </Button>
+        <Button type="button" variant="primary" onClick={onAdd}>
+          הוספת מוזמן + 
+        </Button>
+      </div>
       </div>
 
       {/* Guest List or Empty State */}

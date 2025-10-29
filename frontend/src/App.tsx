@@ -19,8 +19,9 @@ function App() {
           // Default options for all toasts
           duration: 4000,
           style: {
-            background: '#363636',
+            background: '#1e293b',
             color: '#fff',
+            border: '1px solid #334155',
           },
           // Specific options by type
           success: {
@@ -31,7 +32,7 @@ function App() {
             },
           },
           error: {
-            duration: 5000,
+            duration: 3000,
             iconTheme: {
               primary: '#ef4444',
               secondary: '#fff',

@@ -9,6 +9,7 @@ import ExpenseCard from '../components/expenses/ExpenseCard';
 import Modal from '../components/common/Modal';
 import Tooltip from '../components/common/Tooltip';
 import { formatNis } from '../utils/format';
+import toast from 'react-hot-toast';
 
 function ExpensesPage() {
   const { categoryId } = useParams<{ categoryId: string }>();
@@ -73,8 +74,9 @@ function ExpensesPage() {
         { total_cost: 0, amount_paid: 0, remaining: 0 }
       );
       setTotals(totalsComputed);
-    } catch (error) {
-      console.error('Error loading data:', error);
+    } catch (err) {
+      console.error('Error loading data:', err);
+      toast.error('שגיאה בטעינת הדף, אנא נסה שנית.');
     } finally {
       setLoading(false);
     }
@@ -97,8 +99,9 @@ function ExpensesPage() {
       setFormData({ name: '', price_per_unit: '', quantity: 1, amount_paid: 0 });
       setShowForm(false);
       loadData();
-    } catch (error) {
-      console.error('Error creating expense:', error);
+    } catch (err) {
+      console.error('Error creating expense:', err);
+      toast.error('שגיאה ביצירת ההוצאה, אנא נסה שנית.');
     }
   };
 
@@ -121,9 +124,9 @@ function ExpensesPage() {
       // Close modal and reset
       setShowDeleteModal(false);
       setExpenseToDelete(null);
-    } catch (error) {
-      console.error('Error deleting expense:', error);
-      alert('שגיאה במחיקת ההוצאה. נסה שוב.');
+    } catch (err) {
+      console.error('Error deleting expense:', err);
+      toast.error('שגיאה במחיקת ההוצאה, אנא נסה שנית.');
     }
   };
 
@@ -161,9 +164,9 @@ function ExpensesPage() {
       // Close modal and reset
       setShowEditModal(false);
       setExpenseToEdit(null);
-    } catch (error) {
-      console.error('Error updating expense:', error);
-      alert('שגיאה בעדכון ההוצאה. נסה שוב.');
+    } catch (err) {
+      console.error('Error updating expense:', err);
+      toast.error('שגיאה בעדכון ההוצאה, אנא נסה שנית.');
     }
   };
 
