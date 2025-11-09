@@ -4,8 +4,12 @@ import { previewImport, confirmImport } from '../controllers/importController';
 import { asyncHandler } from '../middleware/errorHandler';
 import { validate } from '../middleware/validation';
 import { confirmImportSchema } from '../validators/schemas';
+import { authenticate } from '../middleware/authMiddleware';
 
 const router = Router();
+
+// Apply authentication to all import routes
+router.use(authenticate);
 
 /** 
  * POST /api/import/preview

@@ -8,8 +8,10 @@ import {
 import { validate, validateId } from '../middleware/validation';
 import { createCategorySchema, updateCategorySchema } from '../validators/schemas';
 import { asyncHandler } from '../middleware/errorHandler';
+import { authenticate } from '../middleware/authMiddleware';
 
 const router = Router();
+router.use(authenticate);
 
 // POST /api/categories - Create a new category
 router.post('/', validate(createCategorySchema), asyncHandler(createCategory));

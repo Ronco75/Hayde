@@ -6,7 +6,9 @@ import expensesRoutes from './routes/expensesRoutes';
 import guestRoutes from './routes/guestRoutes';
 import groupRoutes from './routes/groupRoutes';
 import importRoutes from './routes/importRoutes';
+import weddingRoutes from './routes/weddingRoute';
 import { errorHandler } from './middleware/errorHandler';
+import authRoutes from './routes/authRoute';
 
 const app = express();
 const port = 3000;
@@ -21,6 +23,8 @@ app.use('/api/expenses', expensesRoutes);
 app.use('/api/guests', guestRoutes);
 app.use('/api/groups', groupRoutes);
 app.use('/api/import', importRoutes);
+app.use('/api/auth', authRoutes);
+app.use('/api/weddings', weddingRoutes);
 
 // Test database connection
 app.get('/api/health', async (req, res) => {
@@ -53,4 +57,5 @@ app.use(errorHandler);
 app.listen(port, () => {
     console.log(`Server is running on localhost:${port}`);
 });
+
 

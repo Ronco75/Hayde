@@ -6,34 +6,44 @@ import { AppError } from '../errors/customErrors';
 /**
  * Preview/Analyze uploaded Excel file
  * POST /api/import/preview
- * 
+ *
  * This endpoint:
  * 1. Receives an Excel file (via multer middleware)
  * 2. Parses and validates the file
  * 3. Checks for duplicates against existing guests in DB
  * 4. Returns categorized results (valid, duplicates, errors)
- * 
+ *
  * IMPORTANT: This does NOT save any data to DB!
  * It's only for preview/analysis before user confirms import.
  */
 export const previewImport = async (req: Request, res: Response) => {
   try {
-    // Step 1: Check if file was uploaded
+    // Step 1: Get the user's wedding
+    const wedding = await prisma.wedding.findUnique({
+      where: { userId: req.user!.userId },
+    });
+
+    if (!wedding) {
+      throw new AppError('Wedding not found. Please create a wedding first.', 404);
+    }
+
+    // Step 2: Check if file was uploaded
     if (!req.file) {
       throw new AppError('לא הועלה קובץ', 400);
     }
 
-    // Step 2: Parse the Excel file
+    // Step 3: Parse the Excel file
     // req.file.buffer contains the file data (thanks to memoryStorage)
     const { guests, errors } = parseExcelFile(req.file.buffer);
 
-    // Step 3: Check for duplicates
-    // We need to check if any phone numbers already exist in DB
+    // Step 4: Check for duplicates
+    // We need to check if any phone numbers already exist in DB for this wedding
     const phoneNumbers = guests.map(g => g.phoneNumber);
 
-    // Query DB for existing guests with these phone numbers
+    // Query DB for existing guests with these phone numbers (within this wedding only)
     const existingGuests = await prisma.guest.findMany({
       where: {
+        weddingId: wedding.id,
         phoneNumber: {
           in: phoneNumbers,
         },
@@ -138,6 +148,15 @@ interface GuestToImport {
  */
 export const confirmImport = async (req: Request, res: Response) => {
   try {
+    // Step 1: Get the user's wedding
+    const wedding = await prisma.wedding.findUnique({
+      where: { userId: req.user!.userId },
+    });
+
+    if (!wedding) {
+      throw new AppError('Wedding not found. Please create a wedding first.', 404);
+    }
+
     const { guests, replaceExisting = false } = req.body as {
       guests: GuestToImport[];
       replaceExisting?: boolean;
@@ -148,15 +167,16 @@ export const confirmImport = async (req: Request, res: Response) => {
       throw new AppError('לא נשלחו מוזמנים לייבוא', 400);
     }
 
-    // Step 1: Get or create groups
+    // Step 2: Get or create groups
     // Extract unique group names
     const uniqueGroupNames = Array.from(
       new Set(guests.map(g => g.groupName))
     );
 
-    // Find existing groups
+    // Find existing groups for this wedding
     const existingGroups = await prisma.group.findMany({
       where: {
+        weddingId: wedding.id,
         name: {
           in: uniqueGroupNames,
         },
@@ -178,7 +198,10 @@ export const confirmImport = async (req: Request, res: Response) => {
       const createdGroups = await Promise.all(
         groupsToCreate.map(name =>
           prisma.group.create({
-            data: { name },
+            data: {
+              weddingId: wedding.id,
+              name
+            },
           })
         )
       );
@@ -204,9 +227,12 @@ export const confirmImport = async (req: Request, res: Response) => {
           throw new Error('לא נמצאה קבוצה');
         }
 
-        // Check if guest exists
+        // Check if guest exists in this wedding
         const existing = await prisma.guest.findFirst({
-          where: { phoneNumber: guest.phoneNumber },
+          where: {
+            weddingId: wedding.id,
+            phoneNumber: guest.phoneNumber
+          },
         });
 
         if (existing) {
@@ -233,6 +259,7 @@ export const confirmImport = async (req: Request, res: Response) => {
           // Create new guest
           await prisma.guest.create({
             data: {
+              weddingId: wedding.id,
               name: guest.name,
               phoneNumber: guest.phoneNumber,
               groupId,

@@ -165,7 +165,43 @@ export const confirmImportSchema = z.object({
   replaceExisting: z.boolean().optional().default(false),
 });
 
-export type ConfirmImportInput = z.infer<typeof confirmImportSchema>;
+
+// ============= Authentication Schemas =============
+export const registerSchema = z.object({
+  email: z.string().email('Invalid email format'),
+  password: z.string().min(6, 'Password must be at least 6 characters'),
+});
+
+export const loginSchema = z.object({
+  email: z.string().email('Invalid email format'),
+  password: z.string().min(1, 'Password is required'),
+});
+
+// ============= WEDDING SCHEMAS =============
+
+export const createWeddingSchema = z.object({
+  bride_name: z.string().min(1, 'Bride name is required'),
+  groom_name: z.string().min(1, 'Groom name is required'),
+  wedding_date: z.string().refine((date) => !isNaN(Date.parse(date)), {
+    message: 'Invalid date format',
+  }),
+  venue: z.string().optional(),
+  address: z.string().optional(),
+  budget: z.number().positive().optional(),
+});
+
+export const updateWeddingSchema = z.object({
+  bride_name: z.string().min(1).optional(),
+  groom_name: z.string().min(1).optional(),
+  wedding_date: z.string().refine((date) => !isNaN(Date.parse(date)), {
+    message: 'Invalid date format',
+  }).optional(),
+  venue: z.string().optional(),
+  address: z.string().optional(),
+  budget: z.number().positive().optional(),
+});
+
+
 
 /**
  * Type exports for use in controllers
@@ -184,3 +220,11 @@ export type CreateGuestInput = z.infer<typeof createGuestSchema>;
 export type UpdateGuestInput = z.infer<typeof updateGuestSchema>;
 
 export type RsvpStatus = z.infer<typeof rsvpStatusSchema>;
+
+export type ConfirmImportInput = z.infer<typeof confirmImportSchema>;
+
+export type RegisterInput = z.infer<typeof registerSchema>;
+export type LoginInput = z.infer<typeof loginSchema>;
+
+export type CreateWeddingInput = z.infer<typeof createWeddingSchema>;
+export type UpdateWeddingInput = z.infer<typeof updateWeddingSchema>;

@@ -1,21 +1,36 @@
-import { Request, Response } from 'express';
+import { Request, Response, Router } from 'express';
 import prisma from '../config/db';
 import { handlePrismaCreateError, handlePrismaUpdateError, handlePrismaDeleteError } from '../errors/prismaErrorHandler';
 import { CreateGroupInput, UpdateGroupInput } from '../validators/schemas';
 import { transformGroup, transformGroups } from '../utils/transformers';
+import { authenticate } from '../middleware/authMiddleware';
+
+const router = Router();
+router.use(authenticate);
 
 /**
  * Create a new group
  * POST /api/groups
- *
- * Validation is handled by middleware
  */
 export const createGroup = async (req: Request, res: Response) => {
   const { name } = req.body as CreateGroupInput;
 
   try {
+    // Get the user's wedding
+    const wedding = await prisma.wedding.findUnique({
+      where: { userId: req.user!.userId },
+    });
+
+    if (!wedding) {
+      res.status(404).json({ error: 'Wedding not found. Please create a wedding first.' });
+      return;
+    }
+
     const newGroup = await prisma.group.create({
-      data: { name },
+      data: { 
+        name,
+        weddingId: wedding.id,
+      },
     });
 
     res.status(201).json(transformGroup(newGroup));
@@ -26,12 +41,23 @@ export const createGroup = async (req: Request, res: Response) => {
 };
 
 /**
- * Get all groups
+ * Get all groups for the authenticated user's wedding
  * GET /api/groups
  */
 export const getAllGroups = async (req: Request, res: Response) => {
   try {
+    // Get the user's wedding
+    const wedding = await prisma.wedding.findUnique({
+      where: { userId: req.user!.userId },
+    });
+
+    if (!wedding) {
+      res.json([]); // Return empty array if no wedding yet
+      return;
+    }
+
     const groups = await prisma.group.findMany({
+      where: { weddingId: wedding.id },
       orderBy: { createdAt: 'desc' },
     });
 
@@ -43,22 +69,44 @@ export const getAllGroups = async (req: Request, res: Response) => {
 };
 
 /**
- * Update group name
+ * Update a group
  * PUT /api/groups/:id
- *
- * Validation is handled by middleware
  */
 export const updateGroup = async (req: Request, res: Response) => {
   const { id } = req.params;
   const { name } = req.body as UpdateGroupInput;
 
   try {
-    const updatedGroup = await prisma.group.update({
-      where: { id: parseInt(id) },
+    // Get the user's wedding
+    const wedding = await prisma.wedding.findUnique({
+      where: { userId: req.user!.userId },
+    });
+
+    if (!wedding) {
+      res.status(404).json({ error: 'Wedding not found' });
+      return;
+    }
+
+    // Update only if the group belongs to this user's wedding
+    const updatedGroup = await prisma.group.updateMany({
+      where: { 
+        id: parseInt(id),
+        weddingId: wedding.id, // Security check
+      },
       data: { name },
     });
 
-    res.json(transformGroup(updatedGroup));
+    if (updatedGroup.count === 0) {
+      res.status(404).json({ error: 'Group not found or you do not have permission to update it' });
+      return;
+    }
+
+    // Fetch the updated group to return
+    const group = await prisma.group.findUnique({
+      where: { id: parseInt(id) },
+    });
+
+    res.json(transformGroup(group!));
 
   } catch (error) {
     handlePrismaUpdateError(error, 'Group', id);
@@ -68,16 +116,33 @@ export const updateGroup = async (req: Request, res: Response) => {
 /**
  * Delete a group
  * DELETE /api/groups/:id
- *
- * Note: This will fail if the group has associated guests (foreign key constraint)
  */
 export const deleteGroup = async (req: Request, res: Response) => {
   const { id } = req.params;
 
   try {
-    await prisma.group.delete({
-      where: { id: parseInt(id) },
+    // Get the user's wedding
+    const wedding = await prisma.wedding.findUnique({
+      where: { userId: req.user!.userId },
     });
+
+    if (!wedding) {
+      res.status(404).json({ error: 'Wedding not found' });
+      return;
+    }
+
+    // Delete only if the group belongs to this user's wedding
+    const deletedGroup = await prisma.group.deleteMany({
+      where: { 
+        id: parseInt(id),
+        weddingId: wedding.id, // Security check
+      },
+    });
+
+    if (deletedGroup.count === 0) {
+      res.status(404).json({ error: 'Group not found or you do not have permission to delete it' });
+      return;
+    }
 
     res.status(204).send();
 

@@ -7,10 +7,49 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model User {
+  id        Int       @id @default(autoincrement())
+  email     String    @unique @db.VarChar(255)
+  password  String?   @db.VarChar(255)  // bcrypt hash (optional for Google OAuth)
+  googleId  String?   @unique @map("google_id") @db.VarChar(255)
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  wedding   Wedding?  // One-to-one relationship
+
+  @@map("users")
+}
+
+model Wedding {
+    id          Int       @id @default(autoincrement())
+  brideName   String    @map("bride_name") @db.VarChar(255)
+  groomName   String    @map("groom_name") @db.VarChar(255)
+  weddingDate DateTime  @map("wedding_date") @db.Date
+  venue       String?   @db.VarChar(255)
+  address     String?   @db.VarChar(500)
+  budget      Decimal?  @db.Decimal(10, 2)
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  
+  // Foreign key to User
+  userId      Int       @unique @map("user_id")
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Relations to existing models
+  categories  Category[]
+  expenses    Expense[]
+  groups      Group[]
+  guests      Guest[]
+  
+  @@map("weddings")
+}
+
 model Category {
   id        Int       @id @default(autoincrement())
+  weddingId Int       @map("wedding_id")
   name      String    @db.VarChar(255)
   createdAt DateTime  @default(now()) @map("created_at") @db.Timestamp(6)
+
+  wedding Wedding     @relation(fields: [weddingId], references: [id], onDelete: Cascade)
   expenses  Expense[]
 
   @@map("categories")
@@ -18,29 +57,38 @@ model Category {
 
 model Expense {
   id           Int       @id @default(autoincrement())
+  weddingId    Int       @map("wedding_id") 
   categoryId   Int       @map("category_id")
   name         String    @db.VarChar(200)
   pricePerUnit Decimal   @map("price_per_unit") @db.Decimal(10, 2)
   quantity     Int       @default(1)
   amountPaid   Decimal   @default(0) @map("amount_paid") @db.Decimal(10, 2)
   createdAt    DateTime  @default(now()) @map("created_at") @db.Timestamp(6)
+  
+  wedding      Wedding   @relation(fields: [weddingId], references: [id], onDelete: Cascade)
   category     Category  @relation(fields: [categoryId], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
+  @@index([weddingId])
   @@index([categoryId])
   @@map("expenses")
 }
 
 model Group {
   id        Int       @id @default(autoincrement())
+  weddingId Int       @map("wedding_id")  
   name      String    @db.VarChar(255)
   createdAt DateTime  @default(now()) @map("created_at") @db.Timestamp(6)
+  
+  wedding   Wedding   @relation(fields: [weddingId], references: [id], onDelete: Cascade)  
   guests    Guest[]
 
+  @@index([weddingId])  
   @@map("groups")
 }
 
 model Guest {
   id               Int       @id @default(autoincrement())
+  weddingId        Int       @map("wedding_id")
   name             String    @db.VarChar(255)
   phoneNumber      String    @map("phone_number") @db.VarChar(20)
   groupId          Int       @map("group_id")
@@ -50,8 +98,11 @@ model Guest {
   reminderSentAt   DateTime? @map("reminder_sent_at") @db.Timestamp(6)
   notes            String?
   createdAt        DateTime  @default(now()) @map("created_at") @db.Timestamp(6)
+  
+  wedding          Wedding   @relation(fields: [weddingId], references: [id], onDelete: Cascade)
   group            Group     @relation(fields: [groupId], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
+  @@index([weddingId])
   @@index([groupId], map: "idx_guests_group_id")
   @@index([rsvpStatus], map: "idx_guests_rsvp_status")
   @@map("guests")

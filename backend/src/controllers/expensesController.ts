@@ -1,9 +1,13 @@
-import { Request, Response } from 'express';
+import { Request, Response, Router } from 'express';
 import prisma from '../config/db';
 import { Decimal } from '@prisma/client/runtime/library';
 import { handlePrismaCreateError, handlePrismaUpdateError, handlePrismaDeleteError } from '../errors/prismaErrorHandler';
 import { CreateExpenseInput, UpdateExpenseInput } from '../validators/schemas';
 import { transformExpense, transformExpenses } from '../utils/transformers';
+import { authenticate } from '../middleware/authMiddleware';
+
+const router = Router();
+router.use(authenticate);
 
 /**
  * Create a new expense
@@ -15,8 +19,19 @@ export const createExpense = async (req: Request, res: Response) => {
   const { category_id, name, price_per_unit, quantity, amount_paid } = req.body as CreateExpenseInput;
 
   try {
+    // Get the user's wedding
+    const wedding = await prisma.wedding.findUnique({
+      where: { userId: req.user!.userId },
+    });
+
+    if (!wedding) {
+      res.status(404).json({ error: 'Wedding not found. Please create a wedding first.' });
+      return;
+    }
+
     const newExpense = await prisma.expense.create({
       data: {
+        weddingId: wedding.id,
         categoryId: category_id,
         name,
         pricePerUnit: price_per_unit,
@@ -38,7 +53,18 @@ export const createExpense = async (req: Request, res: Response) => {
  */
 export const getAllExpenses = async (req: Request, res: Response) => {
   try {
+    // Get the user's wedding
+    const wedding = await prisma.wedding.findUnique({
+      where: { userId: req.user!.userId },
+    });
+
+    if (!wedding) {
+      res.json([]); // Return empty array if no wedding yet
+      return;
+    }
+
     const expenses = await prisma.expense.findMany({
+      where: { weddingId: wedding.id },
       orderBy: { createdAt: 'desc' },
     });
 
@@ -57,8 +83,21 @@ export const getExpensesByCategory = async (req: Request, res: Response) => {
   const { id } = req.params;
 
   try {
+    // Get the user's wedding
+    const wedding = await prisma.wedding.findUnique({
+      where: { userId: req.user!.userId },
+    });
+
+    if (!wedding) {
+      res.json([]); // Return empty array if no wedding yet
+      return;
+    }
+
     const expenses = await prisma.expense.findMany({
-      where: { categoryId: parseInt(id) },
+      where: { 
+        weddingId: wedding.id,
+        categoryId: parseInt(id),
+      },
       orderBy: { createdAt: 'desc' },
     });
 
@@ -80,8 +119,22 @@ export const updateExpense = async (req: Request, res: Response) => {
   const { category_id, name, price_per_unit, quantity, amount_paid } = req.body as UpdateExpenseInput;
 
   try {
-    const updatedExpense = await prisma.expense.update({
-      where: { id: parseInt(id) },
+    // Get the user's wedding
+    const wedding = await prisma.wedding.findUnique({
+      where: { userId: req.user!.userId },
+    });
+
+    if (!wedding) {
+      res.status(404).json({ error: 'Wedding not found' });
+      return;
+    }
+
+    // Update only if the expense belongs to this user's wedding
+    const updatedExpense = await prisma.expense.updateMany({
+      where: { 
+        id: parseInt(id),
+        weddingId: wedding.id, // Security check
+      },
       data: {
         categoryId: category_id,
         name,
@@ -91,7 +144,17 @@ export const updateExpense = async (req: Request, res: Response) => {
       },
     });
 
-    res.json(transformExpense(updatedExpense));
+    if (updatedExpense.count === 0) {
+      res.status(404).json({ error: 'Expense not found or you do not have permission to update it' });
+      return;
+    }
+
+    // Fetch the updated expense to return
+    const expense = await prisma.expense.findUnique({
+      where: { id: parseInt(id) },
+    });
+
+    res.json(transformExpense(expense!));
 
   } catch (error) {
     handlePrismaUpdateError(error, 'Expense', id);
@@ -106,9 +169,28 @@ export const deleteExpense = async (req: Request, res: Response) => {
   const { id } = req.params;
 
   try {
-    await prisma.expense.delete({
-      where: { id: parseInt(id) },
+    // Get the user's wedding
+    const wedding = await prisma.wedding.findUnique({
+      where: { userId: req.user!.userId },
     });
+
+    if (!wedding) {
+      res.status(404).json({ error: 'Wedding not found' });
+      return;
+    }
+
+    // Delete only if the expense belongs to this user's wedding
+    const deletedExpense = await prisma.expense.deleteMany({
+      where: { 
+        id: parseInt(id),
+        weddingId: wedding.id, // Security check
+      },
+    });
+
+    if (deletedExpense.count === 0) {
+      res.status(404).json({ error: 'Expense not found or you do not have permission to delete it' });
+      return;
+    }
 
     res.status(204).send();
 
@@ -118,69 +200,42 @@ export const deleteExpense = async (req: Request, res: Response) => {
 };
 
 /**
- * Interface for category totals aggregation
- */
-interface CategoryTotals {
-  category_id: number;
-  total_cost: number;
-  amount_paid: number;
-  remaining_amount: number;
-}
-
-/**
- * Get totals grouped by category
+ * Get category totals for the user's wedding
  * GET /api/expenses/totals
- *
- * Returns aggregated financial data per category
  */
-export const getCategoryTotals = async (_req: Request, res: Response) => {
+export const getCategoryTotals = async (req: Request, res: Response) => {
   try {
-    // Use Prisma groupBy with aggregate
-    const groupedExpenses = await prisma.expense.groupBy({
+    // Get the user's wedding
+    const wedding = await prisma.wedding.findUnique({
+      where: { userId: req.user!.userId },
+    });
+
+    if (!wedding) {
+      res.json([]); // Return empty array if no wedding yet
+      return;
+    }
+
+    const totals = await prisma.expense.groupBy({
       by: ['categoryId'],
+      where: { weddingId: wedding.id },
       _sum: {
-        amountPaid: true,
-      },
-    });
-
-    // Get all expenses to calculate total_cost manually (since it's a computed field)
-    const allExpenses = await prisma.expense.findMany({
-      select: {
-        categoryId: true,
         pricePerUnit: true,
-        quantity: true,
         amountPaid: true,
       },
     });
 
-    // Calculate totals by category
-    const totalsMap = new Map<number, CategoryTotals>();
+    // Transform to match expected format
+    const result = totals.map((item) => ({
+      category_id: item.categoryId,
+      total_cost: item._sum.pricePerUnit?.toNumber() || 0,
+      amount_paid: item._sum.amountPaid?.toNumber() || 0,
+      remaining: (item._sum.pricePerUnit?.toNumber() || 0) - (item._sum.amountPaid?.toNumber() || 0),
+    }));
 
-    allExpenses.forEach((expense) => {
-      const categoryId = expense.categoryId;
-      const pricePerUnit = expense.pricePerUnit instanceof Decimal ? expense.pricePerUnit.toNumber() : Number(expense.pricePerUnit);
-      const amountPaid = expense.amountPaid instanceof Decimal ? expense.amountPaid.toNumber() : Number(expense.amountPaid);
-      const totalCost = pricePerUnit * expense.quantity;
-
-      if (!totalsMap.has(categoryId)) {
-        totalsMap.set(categoryId, {
-          category_id: categoryId,
-          total_cost: 0,
-          amount_paid: 0,
-          remaining_amount: 0,
-        });
-      }
-
-      const totals = totalsMap.get(categoryId)!;
-      totals.total_cost += totalCost;
-      totals.amount_paid += amountPaid;
-      totals.remaining_amount = totals.total_cost - totals.amount_paid;
-    });
-
-    const categoryTotals = Array.from(totalsMap.values());
-    res.json(categoryTotals);
+    res.json(result);
 
   } catch (error) {
-    handlePrismaCreateError(error, 'Category totals');
+    console.error('Error getting category totals:', error);
+    res.status(500).json({ error: 'Failed to get category totals' });
   }
 };
