@@ -10,8 +10,12 @@ import {
 import { validate, validateId } from '../middleware/validation';
 import { createExpenseSchema, updateExpenseSchema } from '../validators/schemas';
 import { asyncHandler } from '../middleware/errorHandler';
+import { authenticate } from '../middleware/authMiddleware';
 
 const router = Router();
+
+// Apply authentication to all expense routes
+router.use(authenticate);
 
 // GET /api/expenses/totals - Totals per category (MUST come before /:id routes)
 router.get('/totals', asyncHandler(getCategoryTotals));

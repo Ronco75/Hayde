@@ -11,17 +11,21 @@ import {
   deleteGuest,
   getGuestStats
 } from '../controllers/guestController';
-import { validate, validateId } from '../middleware/validation';
+import { validate, validateId, validateGroupId } from '../middleware/validation';
 import { createGuestSchema, updateGuestSchema, updateRsvpStatusSchema } from '../validators/schemas';
 import { asyncHandler } from '../middleware/errorHandler';
+import { authenticate } from '../middleware/authMiddleware';
 
 const router = Router();
+
+// Apply authentication to all guest routes
+router.use(authenticate);
 
 // GET /api/guests/stats - Get guest statistics (MUST come before /:id routes)
 router.get('/stats', asyncHandler(getGuestStats));
 
 // GET /api/guests/group/:groupId - Get guests by group
-router.get('/group/:groupId', validateId, asyncHandler(getGuestsByGroup));
+router.get('/group/:groupId', validateGroupId, asyncHandler(getGuestsByGroup));
 
 // POST /api/guests - Create a new guest
 router.post('/', validate(createGuestSchema), asyncHandler(createGuest));

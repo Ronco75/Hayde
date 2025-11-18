@@ -106,7 +106,13 @@ export const updateGroup = async (req: Request, res: Response) => {
       where: { id: parseInt(id) },
     });
 
-    res.json(transformGroup(group!));
+    // Defensive check: ensure group exists before transforming
+    if (!group) {
+      res.status(404).json({ error: 'Group not found after update' });
+      return;
+    }
+
+    res.json(transformGroup(group));
 
   } catch (error) {
     handlePrismaUpdateError(error, 'Group', id);

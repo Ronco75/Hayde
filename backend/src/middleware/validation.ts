@@ -93,3 +93,30 @@ export const validateId = (req: Request, res: Response, next: NextFunction): voi
     }
   }
 };
+
+/**
+ * Validates groupId parameter from route params
+ *
+ * Usage:
+ *   router.get('/guests/group/:groupId', validateGroupId, getGuestsByGroup);
+ *
+ * Ensures the groupId is a valid positive integer
+ */
+export const validateGroupId = (req: Request, res: Response, next: NextFunction): void => {
+  const groupIdSchema = z.object({
+    groupId: z.coerce.number().int().positive('Group ID must be a positive integer'),
+  });
+
+  try {
+    const validatedParams = groupIdSchema.parse(req.params);
+    req.params = validatedParams as any; // Type assertion needed for Express types
+    next();
+  } catch (error) {
+    if (error instanceof ZodError) {
+      const formattedErrors = formatZodErrors(error);
+      next(new ValidationError('Invalid ID parameter', formattedErrors));
+    } else {
+      next(error);
+    }
+  }
+};

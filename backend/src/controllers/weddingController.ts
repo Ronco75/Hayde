@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import prisma from '../config/db';
 import { CreateWeddingInput, UpdateWeddingInput } from '../validators/schemas';
+import { transformWedding } from '../utils/transformers';
 
 /**
  * Create a new wedding for the authenticated user
@@ -33,19 +34,7 @@ export const createWedding = async (req: Request, res: Response): Promise<void> 
       },
     });
 
-    res.status(201).json({
-      message: 'Wedding created successfully',
-      wedding: {
-        id: wedding.id,
-        bride_name: wedding.brideName,
-        groom_name: wedding.groomName,
-        wedding_date: wedding.weddingDate,
-        venue: wedding.venue,
-        address: wedding.address,
-        budget: wedding.budget?.toNumber(),
-        created_at: wedding.createdAt,
-      },
-    });
+    res.status(201).json(transformWedding(wedding));
   } catch (error) {
     console.error('Create wedding error:', error);
     res.status(500).json({ error: 'Failed to create wedding' });
@@ -67,19 +56,7 @@ export const getWedding = async (req: Request, res: Response): Promise<void> => 
       return;
     }
 
-    res.status(200).json({
-      wedding: {
-        id: wedding.id,
-        bride_name: wedding.brideName,
-        groom_name: wedding.groomName,
-        wedding_date: wedding.weddingDate,
-        venue: wedding.venue,
-        address: wedding.address,
-        budget: wedding.budget?.toNumber(),
-        created_at: wedding.createdAt,
-        updated_at: wedding.updatedAt,
-      },
-    });
+    res.status(200).json(transformWedding(wedding));
   } catch (error) {
     console.error('Get wedding error:', error);
     res.status(500).json({ error: 'Failed to get wedding' });
@@ -119,20 +96,7 @@ export const updateWedding = async (req: Request, res: Response): Promise<void> 
       data: updateData,
     });
 
-    res.status(200).json({
-      message: 'Wedding updated successfully',
-      wedding: {
-        id: wedding.id,
-        bride_name: wedding.brideName,
-        groom_name: wedding.groomName,
-        wedding_date: wedding.weddingDate,
-        venue: wedding.venue,
-        address: wedding.address,
-        budget: wedding.budget?.toNumber(),
-        created_at: wedding.createdAt,
-        updated_at: wedding.updatedAt,
-      },
-    });
+    res.status(200).json(transformWedding(wedding));
   } catch (error) {
     console.error('Update wedding error:', error);
     res.status(500).json({ error: 'Failed to update wedding' });

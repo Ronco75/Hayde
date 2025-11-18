@@ -8,8 +8,12 @@ import {
 import { validate, validateId } from '../middleware/validation';
 import { createGroupSchema, updateGroupSchema } from '../validators/schemas';
 import { asyncHandler } from '../middleware/errorHandler';
+import { authenticate } from '../middleware/authMiddleware';
 
 const router = Router();
+
+// Apply authentication to all group routes
+router.use(authenticate);
 
 // POST /api/groups - Create a new group
 router.post('/', validate(createGroupSchema), asyncHandler(createGroup));

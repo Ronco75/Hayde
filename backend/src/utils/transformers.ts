@@ -1,5 +1,5 @@
 import { Decimal } from '@prisma/client/runtime/library';
-import type { Category as PrismaCategory, Expense as PrismaExpense, Group as PrismaGroup, Guest as PrismaGuest } from '@prisma/client';
+import type { Category as PrismaCategory, Expense as PrismaExpense, Group as PrismaGroup, Guest as PrismaGuest, Wedding as PrismaWedding } from '@prisma/client';
 
 /**
  * Utility functions to transform Prisma models (camelCase) to API responses (snake_case)
@@ -153,5 +153,37 @@ export function transformGuestStats(stats: {
     declined_guests: stats.declined_guests,
     pending_guests: stats.pending_guests,
     invitations_sent: stats.invitations_sent,
+  };
+}
+
+// ============= WEDDING TRANSFORMERS =============
+
+export interface WeddingResponse {
+  id: number;
+  user_id: number;
+  bride_name: string;
+  groom_name: string;
+  wedding_date: string;
+  venue: string | null;
+  address: string | null;
+  budget: number | null;
+  created_at: string;
+}
+
+export function transformWedding(wedding: PrismaWedding): WeddingResponse {
+  const budget = wedding.budget instanceof Decimal
+    ? wedding.budget.toNumber()
+    : wedding.budget ? Number(wedding.budget) : null;
+
+  return {
+    id: wedding.id,
+    user_id: wedding.userId,
+    bride_name: wedding.brideName,
+    groom_name: wedding.groomName,
+    wedding_date: wedding.weddingDate.toISOString().split('T')[0], // Format as YYYY-MM-DD
+    venue: wedding.venue,
+    address: wedding.address,
+    budget: budget,
+    created_at: wedding.createdAt.toISOString(),
   };
 }

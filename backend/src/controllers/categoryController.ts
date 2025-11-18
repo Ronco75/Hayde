@@ -96,7 +96,7 @@ export const updateCategory = async (req: Request, res: Response) => {
 
     // Update only if the category belongs to this user's wedding
     const updatedCategory = await prisma.category.updateMany({
-      where: { 
+      where: {
         id: parseInt(id),
         weddingId: wedding.id, // Security: ensure user owns this category
       },
@@ -113,7 +113,13 @@ export const updateCategory = async (req: Request, res: Response) => {
       where: { id: parseInt(id) },
     });
 
-    res.json(transformCategory(category!));
+    // Defensive check: ensure category exists before transforming
+    if (!category) {
+      res.status(404).json({ error: 'Category not found after update' });
+      return;
+    }
+
+    res.json(transformCategory(category));
 
   } catch (error) {
     handlePrismaUpdateError(error, 'Category', id);

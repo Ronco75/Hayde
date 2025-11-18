@@ -215,21 +215,37 @@ export const getCategoryTotals = async (req: Request, res: Response) => {
       return;
     }
 
-    const totals = await prisma.expense.groupBy({
-      by: ['categoryId'],
+    // Fetch all expenses to calculate totals manually
+    // We can't use groupBy with calculated fields (pricePerUnit * quantity)
+    const expenses = await prisma.expense.findMany({
       where: { weddingId: wedding.id },
-      _sum: {
-        pricePerUnit: true,
-        amountPaid: true,
-      },
     });
 
-    // Transform to match expected format
-    const result = totals.map((item) => ({
-      category_id: item.categoryId,
-      total_cost: item._sum.pricePerUnit?.toNumber() || 0,
-      amount_paid: item._sum.amountPaid?.toNumber() || 0,
-      remaining: (item._sum.pricePerUnit?.toNumber() || 0) - (item._sum.amountPaid?.toNumber() || 0),
+    // Group by category and calculate totals
+    const categoryTotals = new Map<number, { total_cost: number; amount_paid: number }>();
+
+    expenses.forEach((expense) => {
+      const totalCost = expense.pricePerUnit.toNumber() * expense.quantity;
+      const amountPaid = expense.amountPaid.toNumber();
+
+      const existing = categoryTotals.get(expense.categoryId);
+      if (existing) {
+        existing.total_cost += totalCost;
+        existing.amount_paid += amountPaid;
+      } else {
+        categoryTotals.set(expense.categoryId, {
+          total_cost: totalCost,
+          amount_paid: amountPaid,
+        });
+      }
+    });
+
+    // Transform to array format
+    const result = Array.from(categoryTotals.entries()).map(([categoryId, totals]) => ({
+      category_id: categoryId,
+      total_cost: totals.total_cost,
+      amount_paid: totals.amount_paid,
+      remaining: totals.total_cost - totals.amount_paid,
     }));
 
     res.json(result);
