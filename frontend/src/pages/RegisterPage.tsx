@@ -1,0 +1,288 @@
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
+import Button from '../components/common/Button';
+import toast from 'react-hot-toast';
+
+const RegisterPage: React.FC = () => {
+  const navigate = useNavigate();
+  const { register, isAuthenticated, isLoading } = useAuth();
+
+  const [formData, setFormData] = useState({
+    email: '',
+    password: '',
+    confirmPassword: '',
+  });
+  const [loading, setLoading] = useState(false);
+  const [passwordStrength, setPasswordStrength] = useState<
+    'weak' | 'medium' | 'strong' | null
+  >(null);
+
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (!isLoading && isAuthenticated) {
+      navigate('/dashboard');
+    }
+  }, [isAuthenticated, isLoading, navigate]);
+
+  // Calculate password strength
+  useEffect(() => {
+    if (!formData.password) {
+      setPasswordStrength(null);
+      return;
+    }
+
+    const length = formData.password.length;
+    const hasNumbers = /\d/.test(formData.password);
+    const hasSpecialChars = /[!@#$%^&*(),.?":{}|<>]/.test(formData.password);
+
+    if (length < 6) {
+      setPasswordStrength('weak');
+    } else if (length >= 6 && length < 10) {
+      setPasswordStrength('medium');
+    } else if (length >= 10 && (hasNumbers || hasSpecialChars)) {
+      setPasswordStrength('strong');
+    } else {
+      setPasswordStrength('medium');
+    }
+  }, [formData.password]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    // Validation
+    if (!formData.email.trim() || !formData.password.trim() || !formData.confirmPassword.trim()) {
+      toast.error('נא למלא את כל השדות');
+      return;
+    }
+
+    if (formData.password !== formData.confirmPassword) {
+      toast.error('הסיסמאות אינן תואמות');
+      return;
+    }
+
+    if (formData.password.length < 6) {
+      toast.error('הסיסמה חייבת להכיל לפחות 6 תווים');
+      return;
+    }
+
+    try {
+      setLoading(true);
+      await register({
+        email: formData.email,
+        password: formData.password,
+      });
+      // Redirect to wedding setup after successful registration
+      navigate('/wedding-setup');
+    } catch (error) {
+      // Error is handled by axios interceptor
+      console.error('Registration error:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  // Password strength indicator color
+  const getStrengthColor = () => {
+    switch (passwordStrength) {
+      case 'weak':
+        return 'bg-red-500';
+      case 'medium':
+        return 'bg-yellow-500';
+      case 'strong':
+        return 'bg-green-500';
+      default:
+        return 'bg-gray-600';
+    }
+  };
+
+  const getStrengthText = () => {
+    switch (passwordStrength) {
+      case 'weak':
+        return 'חלשה';
+      case 'medium':
+        return 'בינונית';
+      case 'strong':
+        return 'חזקה';
+      default:
+        return '';
+    }
+  };
+
+  // Show loading while checking auth
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
+        <div className="text-gray-300 text-lg">טוען...</div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-slate-950 flex items-center justify-center p-6">
+      <div className="w-full max-w-md">
+        {/* Logo/Header */}
+        <div className="text-center mb-8">
+          <h1 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary-400 to-primary-600 mb-2">
+            Hayde
+          </h1>
+          <p className="text-gray-400">תתחילו לתכנן את החתונה המושלמת</p>
+        </div>
+
+        {/* Register Card */}
+        <div className="bg-slate-900 border border-white/10 rounded-xl shadow-elev-3 p-8">
+          <h2 className="text-2xl font-bold text-gray-100 mb-6 text-center">
+            הרשמה
+          </h2>
+
+          <form onSubmit={handleSubmit} className="space-y-5">
+            {/* Email Field */}
+            <div>
+              <label
+                htmlFor="email"
+                className="block text-sm font-semibold text-gray-300 mb-2"
+              >
+                כתובת מייל
+              </label>
+              <input
+                type="email"
+                id="email"
+                name="email"
+                value={formData.email}
+                onChange={handleInputChange}
+                className="w-full px-4 py-3 text-base rounded-lg bg-slate-800 text-gray-100
+                         placeholder:text-gray-400 border border-white/10
+                         focus:outline-none focus:ring-4 focus:ring-primary-300
+                         focus:border-primary-600 transition-all duration-200"
+                placeholder="example@email.com"
+                required
+                disabled={loading}
+              />
+            </div>
+
+            {/* Password Field */}
+            <div>
+              <label
+                htmlFor="password"
+                className="block text-sm font-semibold text-gray-300 mb-2"
+              >
+                סיסמה
+              </label>
+              <input
+                type="password"
+                id="password"
+                name="password"
+                value={formData.password}
+                onChange={handleInputChange}
+                className="w-full px-4 py-3 text-base rounded-lg bg-slate-800 text-gray-100
+                         placeholder:text-gray-400 border border-white/10
+                         focus:outline-none focus:ring-4 focus:ring-primary-300
+                         focus:border-primary-600 transition-all duration-200"
+                placeholder="לפחות 6 תווים"
+                required
+                disabled={loading}
+              />
+              {/* Password Strength Indicator */}
+              {passwordStrength && (
+                <div className="mt-2">
+                  <div className="flex items-center gap-2">
+                    <div className="flex-1 h-1.5 bg-slate-700 rounded-full overflow-hidden">
+                      <div
+                        className={`h-full transition-all duration-300 ${getStrengthColor()}`}
+                        style={{
+                          width:
+                            passwordStrength === 'weak'
+                              ? '33%'
+                              : passwordStrength === 'medium'
+                              ? '66%'
+                              : '100%',
+                        }}
+                      />
+                    </div>
+                    <span className="text-xs text-gray-400">
+                      {getStrengthText()}
+                    </span>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Confirm Password Field */}
+            <div>
+              <label
+                htmlFor="confirmPassword"
+                className="block text-sm font-semibold text-gray-300 mb-2"
+              >
+                אימות סיסמה
+              </label>
+              <input
+                type="password"
+                id="confirmPassword"
+                name="confirmPassword"
+                value={formData.confirmPassword}
+                onChange={handleInputChange}
+                className="w-full px-4 py-3 text-base rounded-lg bg-slate-800 text-gray-100
+                         placeholder:text-gray-400 border border-white/10
+                         focus:outline-none focus:ring-4 focus:ring-primary-300
+                         focus:border-primary-600 transition-all duration-200"
+                placeholder="הזן את הסיסמה שוב"
+                required
+                disabled={loading}
+              />
+              {/* Password Match Indicator */}
+              {formData.confirmPassword && (
+                <div className="mt-2">
+                  {formData.password === formData.confirmPassword ? (
+                    <span className="text-xs text-green-400">✓ הסיסמאות תואמות</span>
+                  ) : (
+                    <span className="text-xs text-red-400">✗ הסיסמאות אינן תואמות</span>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Submit Button */}
+            <Button
+              type="submit"
+              variant="primary"
+              className="w-full mt-6"
+              disabled={loading}
+            >
+              {loading ? 'נרשם...' : 'הירשם'}
+            </Button>
+          </form>
+
+          {/* Login Link */}
+          <div className="mt-6 text-center">
+            <p className="text-gray-400 text-sm">
+              כבר יש לך חשבון?{' '}
+              <Link
+                to="/login"
+                className="text-primary-400 hover:text-primary-300 font-semibold transition-colors"
+              >
+                התחבר
+              </Link>
+            </p>
+          </div>
+        </div>
+
+        {/* Back to Home Link */}
+        <div className="mt-6 text-center">
+          <Link
+            to="/"
+            className="text-gray-500 hover:text-gray-300 text-sm transition-colors"
+          >
+            ← חזרה לדף הבית
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default RegisterPage;

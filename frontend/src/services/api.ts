@@ -16,7 +16,14 @@ import type {
   UpdateExpenseDto,
   ImportPreviewResponse,
   ImportConfirmRequest,
-  ImportConfirmResponse
+  ImportConfirmResponse,
+  User,
+  Wedding,
+  LoginDto,
+  RegisterDto,
+  AuthResponse,
+  CreateWeddingDto,
+  UpdateWeddingDto
 } from '../types';
 
 const API_URL = 'http://localhost:3000/api';
@@ -31,6 +38,23 @@ interface ApiErrorResponse {
   timestamp: string;
   path: string;
 }
+
+/**
+ * Axios request interceptor to attach JWT token
+ * Automatically adds Authorization header to all requests if token exists
+ */
+axios.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('authToken');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
 
 /**
  * Axios response interceptor for error handling
@@ -57,6 +81,16 @@ axios.interceptors.response.use(
           });
         } else {
           toast.error(data.error || 'שגיאת קלט - נתונים לא תקינים');
+        }
+        break;
+
+      case 401: // Unauthorized - invalid or expired token
+        toast.error('אנא התחבר מחדש למערכת');
+        // Clear invalid token
+        localStorage.removeItem('authToken');
+        // Redirect to login page
+        if (window.location.pathname !== '/login') {
+          window.location.href = '/login';
         }
         break;
 
@@ -180,7 +214,7 @@ export const importApi = {
     const formData = new FormData();
     formData.append('file', file);
     return axios.post<ImportPreviewResponse>(
-      `${API_URL}/import/preview`, 
+      `${API_URL}/import/preview`,
       formData,
       {
         headers: {
@@ -191,6 +225,44 @@ export const importApi = {
   },
 
   // Confirm and execute the import
-  confirm: (data: ImportConfirmRequest) => 
+  confirm: (data: ImportConfirmRequest) =>
     axios.post<ImportConfirmResponse>(`${API_URL}/import/confirm`, data),
+};
+
+// ============= AUTHENTICATION API =============
+export const authApi = {
+  // Login with email and password
+  login: (credentials: LoginDto) =>
+    axios.post<AuthResponse>(`${API_URL}/auth/login`, credentials),
+
+  // Register new user
+  register: (credentials: RegisterDto) =>
+    axios.post<AuthResponse>(`${API_URL}/auth/register`, credentials),
+
+  // Get current user data
+  getCurrentUser: () =>
+    axios.get<User>(`${API_URL}/auth/me`),
+
+  // Logout (optional - mainly handled client-side)
+  logout: () =>
+    axios.post<void>(`${API_URL}/auth/logout`),
+};
+
+// ============= WEDDING API =============
+export const weddingApi = {
+  // Create a new wedding
+  create: (data: CreateWeddingDto) =>
+    axios.post<Wedding>(`${API_URL}/weddings`, data),
+
+  // Get user's wedding
+  get: () =>
+    axios.get<Wedding>(`${API_URL}/weddings`),
+
+  // Update wedding details
+  update: (data: UpdateWeddingDto) =>
+    axios.put<Wedding>(`${API_URL}/weddings`, data),
+
+  // Delete wedding
+  delete: () =>
+    axios.delete<void>(`${API_URL}/weddings`),
 };

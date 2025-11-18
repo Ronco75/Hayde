@@ -60,7 +60,7 @@ function ExpenseCard({ expense, onEdit, onDelete }: ExpenseCardProps) {
 
         <div className="flex justify-between items-center pt-3 mt-2 border-t border-white/10">
           <span className="text-primary-200 font-bold text-base sm:text-sm">סה"כ עלות:</span>
-          <span className="font-bold text-primary-300 text-lg sm:text-base">{formatNis(expense.total_cost)}</span>
+          <span className="font-bold text-primary-300 text-lg sm:text-base">{formatNis(expense.total_cost ?? 0)}</span>
         </div>
 
         <div className="flex justify-between items-center bg-green-500/10 px-3 py-2 rounded-md -mx-1">
@@ -70,7 +70,7 @@ function ExpenseCard({ expense, onEdit, onDelete }: ExpenseCardProps) {
 
         <div className="flex justify-between items-center border-t bg-rose-500/10 border-white/10 px-3 py-2 rounded-md -mx-1 mt-2">
           <span className="text-rose-400 font-bold text-base sm:text-sm">נשאר לתשלום:</span>
-          <span className="font-bold text-rose-300 text-lg sm:text-base">{formatNis(expense.remaining_amount)}</span>
+          <span className="font-bold text-rose-300 text-lg sm:text-base">{formatNis(expense.remaining_amount ?? 0)}</span>
         </div>
       </div>
     </div>

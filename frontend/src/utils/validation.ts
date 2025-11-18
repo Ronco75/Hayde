@@ -108,3 +108,82 @@ export type GuestFormData = z.infer<typeof guestSchema>;
 export const updateGuestSchema = guestSchema.partial();
 
 export type UpdateGuestFormData = z.infer<typeof updateGuestSchema>;
+
+/**
+ * Authentication Validation Schemas
+ */
+
+// Login schema
+export const loginSchema = z.object({
+  email: z.string()
+    .min(1, 'יש להזין כתובת מייל')
+    .email('כתובת מייל לא תקינה')
+    .trim(),
+
+  password: z.string()
+    .min(6, 'הסיסמה חייבת להכיל לפחות 6 תווים')
+    .max(100, 'הסיסמה ארוכה מדי'),
+});
+
+export type LoginFormData = z.infer<typeof loginSchema>;
+
+// Registration schema
+export const registerSchema = z.object({
+  email: z.string()
+    .min(1, 'יש להזין כתובת מייל')
+    .email('כתובת מייל לא תקינה')
+    .trim(),
+
+  password: z.string()
+    .min(6, 'הסיסמה חייבת להכיל לפחות 6 תווים')
+    .max(100, 'הסיסמה ארוכה מדי'),
+
+  confirmPassword: z.string()
+    .min(1, 'יש לאמת את הסיסמה'),
+}).refine(
+  (data) => data.password === data.confirmPassword,
+  {
+    message: 'הסיסמאות אינן תואמות',
+    path: ['confirmPassword'],
+  }
+);
+
+export type RegisterFormData = z.infer<typeof registerSchema>;
+
+/**
+ * Wedding Setup Validation Schema
+ */
+export const weddingSetupSchema = z.object({
+  bride_name: z.string()
+    .min(1, 'יש להזין שם הכלה')
+    .max(100, 'שם הכלה ארוך מדי (מקסימום 100 תווים)')
+    .trim(),
+
+  groom_name: z.string()
+    .min(1, 'יש להזין שם החתן')
+    .max(100, 'שם החתן ארוך מדי (מקסימום 100 תווים)')
+    .trim(),
+
+  wedding_date: z.string()
+    .min(1, 'יש להזין תאריך החתונה'),
+
+  venue: z.string()
+    .max(200, 'שם המקום ארוך מדי (מקסימום 200 תווים)')
+    .trim()
+    .optional()
+    .or(z.literal('')),
+
+  address: z.string()
+    .max(300, 'הכתובת ארוכה מדי (מקסימום 300 תווים)')
+    .trim()
+    .optional()
+    .or(z.literal('')),
+
+  budget: z.number()
+    .positive('התקציב חייב להיות מספר חיובי')
+    .finite('יש להזין תקציב תקין')
+    .optional()
+    .or(z.nan()),
+});
+
+export type WeddingSetupFormData = z.infer<typeof weddingSetupSchema>;

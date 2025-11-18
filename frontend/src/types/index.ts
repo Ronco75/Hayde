@@ -182,3 +182,64 @@ export interface UpdateGuestDto {
 export interface UpdateRsvpDto {
   rsvp_status: RsvpStatus;
 }
+
+// ========================= Authentication & Wedding Types =========================
+// User (authenticated user)
+export interface User {
+  id: number;
+  email: string;
+  created_at: string;
+}
+
+// Wedding (user's wedding details)
+export interface Wedding {
+  id: number;
+  user_id: number;
+  bride_name: string;
+  groom_name: string;
+  wedding_date: string;
+  venue?: string | null;
+  address?: string | null;
+  budget?: number | null;
+  created_at: string;
+}
+
+// ============ Auth DTOs ============
+// For login
+export interface LoginDto {
+  email: string;
+  password: string;
+}
+
+// For registration
+export interface RegisterDto {
+  email: string;
+  password: string;
+}
+
+// Auth response from backend
+export interface AuthResponse {
+  token: string;
+  user: User;
+}
+
+// ============ Wedding DTOs ============
+// For creating a new wedding
+export interface CreateWeddingDto {
+  bride_name: string;
+  groom_name: string;
+  wedding_date: string;
+  venue?: string;
+  address?: string;
+  budget?: number;
+}
+
+// For updating wedding details
+export interface UpdateWeddingDto {
+  bride_name?: string;
+  groom_name?: string;
+  wedding_date?: string;
+  venue?: string;
+  address?: string;
+  budget?: number;
+}
