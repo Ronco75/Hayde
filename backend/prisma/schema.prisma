@@ -8,13 +8,15 @@ datasource db {
 }
 
 model User {
-  id        Int       @id @default(autoincrement())
-  email     String    @unique @db.VarChar(255)
-  password  String?   @db.VarChar(255)  // bcrypt hash (optional for Google OAuth)
-  googleId  String?   @unique @map("google_id") @db.VarChar(255)
-  createdAt DateTime  @default(now()) @map("created_at")
-  updatedAt DateTime  @updatedAt @map("updated_at")
-  wedding   Wedding?  // One-to-one relationship
+  id                   Int       @id @default(autoincrement())
+  email                String    @unique @db.VarChar(255)
+  password             String?   @db.VarChar(255)  // bcrypt hash (optional for Google OAuth)
+  googleId             String?   @unique @map("google_id") @db.VarChar(255)
+  resetPasswordToken   String?   @map("reset_password_token") @db.VarChar(255)
+  resetPasswordExpires DateTime? @map("reset_password_expires")
+  createdAt            DateTime  @default(now()) @map("created_at")
+  updatedAt            DateTime  @updatedAt @map("updated_at")
+  wedding              Wedding?  // One-to-one relationship
 
   @@map("users")
 }

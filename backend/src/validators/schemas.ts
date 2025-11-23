@@ -177,6 +177,30 @@ export const loginSchema = z.object({
   password: z.string().min(1, 'Password is required'),
 });
 
+/**
+ * Forgot Password Schema
+ * Validates email for password reset request
+ */
+export const forgotPasswordSchema = z.object({
+  email: z.string()
+    .email('Invalid email format')
+    .trim()
+    .toLowerCase(),
+});
+
+/**
+ * Reset Password Schema
+ * Validates token and new password for password reset
+ */
+export const resetPasswordSchema = z.object({
+  token: z.string()
+    .min(1, 'Reset token is required')
+    .trim(),
+  newPassword: z.string()
+    .min(6, 'Password must be at least 6 characters')
+    .max(100, 'Password is too long (maximum 100 characters)'),
+});
+
 // ============= WEDDING SCHEMAS =============
 
 export const createWeddingSchema = z.object({
@@ -225,6 +249,8 @@ export type ConfirmImportInput = z.infer<typeof confirmImportSchema>;
 
 export type RegisterInput = z.infer<typeof registerSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;
+export type ForgotPasswordInput = z.infer<typeof forgotPasswordSchema>;
+export type ResetPasswordInput = z.infer<typeof resetPasswordSchema>;
 
 export type CreateWeddingInput = z.infer<typeof createWeddingSchema>;
 export type UpdateWeddingInput = z.infer<typeof updateWeddingSchema>;

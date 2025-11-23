@@ -23,7 +23,10 @@ import type {
   RegisterDto,
   AuthResponse,
   CreateWeddingDto,
-  UpdateWeddingDto
+  UpdateWeddingDto,
+  ForgotPasswordDto,
+  ResetPasswordDto,
+  VerifyTokenResponse
 } from '../types';
 
 const API_URL = 'http://localhost:3000/api';
@@ -104,6 +107,10 @@ axios.interceptors.response.use(
 
       case 422: // Unprocessable entity
         toast.error(data.error || 'לא ניתן לבצע את הפעולה');
+        break;
+
+      case 429: // Too Many Requests (rate limiting)
+        toast.error(data.error || 'יותר מדי ניסיונות - נסה שוב מאוחר יותר');
         break;
 
       case 500: // Server error
@@ -246,6 +253,18 @@ export const authApi = {
   // Logout (optional - mainly handled client-side)
   logout: () =>
     axios.post<void>(`${API_URL}/auth/logout`),
+
+  // Request password reset email
+  forgotPassword: (data: ForgotPasswordDto) =>
+    axios.post<{ message: string }>(`${API_URL}/auth/forgot-password`, data),
+
+  // Reset password with token
+  resetPassword: (data: ResetPasswordDto) =>
+    axios.post<{ message: string }>(`${API_URL}/auth/reset-password`, data),
+
+  // Verify if reset token is valid
+  verifyResetToken: (token: string) =>
+    axios.get<VerifyTokenResponse>(`${API_URL}/auth/verify-reset-token/${token}`),
 };
 
 // ============= WEDDING API =============

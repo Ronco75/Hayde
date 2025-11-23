@@ -1,8 +1,9 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
-import type { User, Wedding, LoginDto, RegisterDto, AuthResponse } from '../types';
+import type { User, Wedding, LoginDto, RegisterDto, AuthResponse, ForgotPasswordDto, ResetPasswordDto } from '../types';
 import axios from 'axios';
 import toast from 'react-hot-toast';
+import { authApi } from '../services/api';
 
 const API_URL = 'http://localhost:3000/api';
 
@@ -18,6 +19,8 @@ interface AuthContextType {
   logout: () => void;
   checkAuth: () => Promise<void>;
   setWedding: (wedding: Wedding) => void;
+  forgotPassword: (email: string) => Promise<void>;
+  resetPassword: (token: string, newPassword: string) => Promise<void>;
 }
 
 // Create Context
@@ -147,6 +150,30 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setWeddingState(weddingData);
   };
 
+  // Forgot password function
+  const forgotPassword = async (email: string) => {
+    try {
+      const response = await authApi.forgotPassword({ email });
+      toast.success(response.data.message || 'אם המייל קיים במערכת, נשלח אליו קישור לאיפוס סיסמה');
+    } catch (error: any) {
+      console.error('Forgot password failed:', error);
+      // Error is handled by axios interceptor
+      throw error;
+    }
+  };
+
+  // Reset password function
+  const resetPassword = async (token: string, newPassword: string) => {
+    try {
+      const response = await authApi.resetPassword({ token, newPassword });
+      toast.success(response.data.message || 'הסיסמה אופסה בהצלחה! אנא התחבר עם הסיסמה החדשה');
+    } catch (error: any) {
+      console.error('Reset password failed:', error);
+      // Error is handled by axios interceptor
+      throw error;
+    }
+  };
+
   const value: AuthContextType = {
     user,
     wedding,
@@ -158,6 +185,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     logout,
     checkAuth,
     setWedding,
+    forgotPassword,
+    resetPassword,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

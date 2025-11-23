@@ -223,6 +223,25 @@ export interface AuthResponse {
   user: User;
 }
 
+// ============ Password Reset DTOs ============
+// For forgot password request
+export interface ForgotPasswordDto {
+  email: string;
+}
+
+// For reset password request
+export interface ResetPasswordDto {
+  token: string;
+  newPassword: string;
+}
+
+// Response from verify reset token endpoint
+export interface VerifyTokenResponse {
+  valid: boolean;
+  message: string;
+  expiresAt?: string;
+}
+
 // ============ Wedding DTOs ============
 // For creating a new wedding
 export interface CreateWeddingDto {

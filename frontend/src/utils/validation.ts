@@ -151,6 +151,38 @@ export const registerSchema = z.object({
 export type RegisterFormData = z.infer<typeof registerSchema>;
 
 /**
+ * Password Reset Validation Schemas
+ */
+
+// Forgot password schema (email only)
+export const forgotPasswordSchema = z.object({
+  email: z.string()
+    .min(1, 'יש להזין כתובת מייל')
+    .email('כתובת מייל לא תקינה')
+    .trim(),
+});
+
+export type ForgotPasswordFormData = z.infer<typeof forgotPasswordSchema>;
+
+// Reset password schema (new password with confirmation)
+export const resetPasswordSchema = z.object({
+  newPassword: z.string()
+    .min(6, 'הסיסמה חייבת להכיל לפחות 6 תווים')
+    .max(100, 'הסיסמה ארוכה מדי'),
+
+  confirmPassword: z.string()
+    .min(1, 'יש לאשר את הסיסמה'),
+}).refine(
+  (data) => data.newPassword === data.confirmPassword,
+  {
+    message: 'הסיסמאות אינן תואמות',
+    path: ['confirmPassword'],
+  }
+);
+
+export type ResetPasswordFormData = z.infer<typeof resetPasswordSchema>;
+
+/**
  * Wedding Setup Validation Schema
  */
 export const weddingSetupSchema = z.object({

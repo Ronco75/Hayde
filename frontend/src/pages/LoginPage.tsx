@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import Button from '../components/common/Button';
 import toast from 'react-hot-toast';
+import { Eye, EyeOff } from 'lucide-react';
 import type { LoginDto } from '../types';
 
 const LoginPage: React.FC = () => {
@@ -14,6 +15,7 @@ const LoginPage: React.FC = () => {
     password: '',
   });
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   // Redirect if already authenticated
   useEffect(() => {
@@ -102,26 +104,49 @@ const LoginPage: React.FC = () => {
 
             {/* Password Field */}
             <div>
-              <label
-                htmlFor="password"
-                className="block text-sm font-semibold text-gray-300 mb-2"
-              >
-                סיסמה
-              </label>
-              <input
-                type="password"
-                id="password"
-                name="password"
-                value={formData.password}
-                onChange={handleInputChange}
-                className="w-full px-4 py-3 text-base rounded-lg bg-slate-800 text-gray-100
-                         placeholder:text-gray-400 border border-white/10
-                         focus:outline-none focus:ring-4 focus:ring-primary-300
-                         focus:border-primary-600 transition-all duration-200"
-                placeholder="••••••••"
-                required
-                disabled={loading}
-              />
+              <div className="flex items-center justify-between mb-2">
+                <label
+                  htmlFor="password"
+                  className="block text-sm font-semibold text-gray-300"
+                >
+                  סיסמה
+                </label>
+                <Link
+                  to="/forgot-password"
+                  className="text-xs text-primary-400 hover:text-primary-300 transition-colors"
+                >
+                  שכחת סיסמה?
+                </Link>
+              </div>
+              <div className="relative">
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  id="password"
+                  name="password"
+                  value={formData.password}
+                  onChange={handleInputChange}
+                  className="w-full px-4 py-3 pr-12 text-base rounded-lg bg-slate-800 text-gray-100
+                           placeholder:text-gray-400 border border-white/10
+                           focus:outline-none focus:ring-4 focus:ring-primary-300
+                           focus:border-primary-600 transition-all duration-200"
+                  placeholder="••••••••"
+                  required
+                  disabled={loading}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-300 transition-colors"
+                  disabled={loading}
+                  aria-label={showPassword ? 'הסתר סיסמה' : 'הצג סיסמה'}
+                >
+                  {showPassword ? (
+                    <EyeOff className="w-5 h-5" />
+                  ) : (
+                    <Eye className="w-5 h-5" />
+                  )}
+                </button>
+              </div>
             </div>
 
             {/* Submit Button */}
