@@ -1,8 +1,13 @@
-import { Pencil, Trash2 } from 'lucide-react';
+/**
+ * ExpenseCard - Animated expense card component
+ * Displays expense details with action buttons
+ */
+
+import { motion } from 'framer-motion';
+import { Pencil, Trash2, DollarSign } from 'lucide-react';
 import type { Expense } from '../../types';
-import Button from '../common/Button';
-import Tooltip from '../common/Tooltip';
 import { formatNis } from '../../utils/format';
+import { cardHover } from '../../utils/motion';
 
 interface ExpenseCardProps {
   expense: Expense;
@@ -11,69 +16,127 @@ interface ExpenseCardProps {
 }
 
 function ExpenseCard({ expense, onEdit, onDelete }: ExpenseCardProps) {
+  const paymentPercentage =
+    expense.total_cost && parseFloat(expense.total_cost) > 0
+      ? ((parseFloat(expense.amount_paid) / parseFloat(expense.total_cost)) * 100).toFixed(0)
+      : '0';
+
   return (
-    <div className="
-      bg-slate-900
-      text-gray-100
-      rounded-lg sm:rounded-md
-      shadow-elev-2
-      hover:shadow-elev-3
-      p-5 sm:p-4
-      transition-all
-      duration-300
-      ease-in-out
-      transform
-      hover:scale-102
-      border
-      border-white/10
-      relative
-    ">
-      
-      {/* Action buttons */}
-      <div className="absolute top-4 left-4 flex gap-2">
-        <Tooltip content="עריכה">
-          <Button size="icon" variant="ghost" onClick={() => onEdit(expense)}>
-            <Pencil size={18} />
-          </Button>
-        </Tooltip>
-        <Tooltip content="מחיקה">
-          <Button size="icon" variant="ghost" onClick={() => onDelete(expense.id)}>
-            <Trash2 size={18} />
-          </Button>
-        </Tooltip>
+    <motion.div
+      className="
+        bg-surface-primary
+        border border-border-subtle
+        rounded-2xl
+        shadow-lg
+        hover:shadow-2xl
+        p-6
+        transition-all
+        duration-300
+        group
+        relative
+        overflow-hidden
+      "
+      variants={cardHover}
+      whileHover="hover"
+    >
+      {/* Decorative gradient */}
+      <div className="absolute inset-0 bg-gradient-to-br from-gold-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+
+      {/* Content */}
+      <div className="relative z-10">
+        {/* Header */}
+        <div className="flex items-start justify-between mb-4 pb-4 border-b border-border-subtle">
+          <div className="flex items-start gap-3 flex-1">
+            <motion.div
+              className="w-10 h-10 bg-gold-500/10 rounded-lg flex items-center justify-center flex-shrink-0"
+              whileHover={{ rotate: [0, -10, 10, -10, 0], scale: 1.1 }}
+              transition={{ duration: 0.5 }}
+            >
+              <DollarSign className="w-5 h-5 text-gold-400" />
+            </motion.div>
+
+            <div className="flex-1 min-w-0">
+              <h3 className="text-lg font-display font-bold text-gray-50 truncate group-hover:text-gold-300 transition-colors">
+                {expense.name}
+              </h3>
+            </div>
+          </div>
+
+          {/* Actions */}
+          <div className="flex gap-2 flex-shrink-0">
+            <motion.button
+              onClick={() => onEdit(expense)}
+              className="p-2 rounded-lg text-gray-400 hover:text-primary-300 hover:bg-surface-secondary transition-colors"
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+              aria-label="עריכה"
+            >
+              <Pencil className="w-4 h-4" />
+            </motion.button>
+
+            <motion.button
+              onClick={() => onDelete(expense.id)}
+              className="p-2 rounded-lg text-gray-400 hover:text-rose-400 hover:bg-rose-500/10 transition-colors"
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+              aria-label="מחיקה"
+            >
+              <Trash2 className="w-4 h-4" />
+            </motion.button>
+          </div>
+        </div>
+
+        {/* Details */}
+        <div className="space-y-3">
+          <div className="flex justify-between text-sm">
+            <span className="text-gray-400">מחיר ליחידה</span>
+            <span className="text-gray-200 font-semibold">{formatNis(expense.price_per_unit)}</span>
+          </div>
+
+          <div className="flex justify-between text-sm">
+            <span className="text-gray-400">כמות</span>
+            <span className="text-gray-200 font-semibold">{expense.quantity}</span>
+          </div>
+
+          <div className="flex justify-between p-3 bg-primary-500/5 border border-primary-500/10 rounded-lg">
+            <span className="text-primary-400 font-medium">סה"כ עלות</span>
+            <span className="text-primary-400 font-display font-bold text-lg">
+              {formatNis(expense.total_cost ?? 0)}
+            </span>
+          </div>
+
+          <div className="flex justify-between p-3 bg-emerald-500/5 border border-emerald-500/10 rounded-lg">
+            <span className="text-emerald-400 font-medium">שולם</span>
+            <span className="text-emerald-400 font-display font-semibold">
+              {formatNis(expense.amount_paid)}
+            </span>
+          </div>
+
+          {/* Progress Bar */}
+          <div className="space-y-2">
+            <div className="flex justify-between text-xs">
+              <span className="text-gray-500">התקדמות תשלום</span>
+              <span className="text-emerald-400 font-semibold">{paymentPercentage}%</span>
+            </div>
+            <div className="h-2 bg-surface-secondary rounded-full overflow-hidden">
+              <motion.div
+                className="h-full bg-gradient-to-r from-emerald-500 to-emerald-600"
+                initial={{ width: 0 }}
+                animate={{ width: `${paymentPercentage}%` }}
+                transition={{ duration: 0.8, ease: 'easeOut' }}
+              />
+            </div>
+          </div>
+
+          <div className="flex justify-between p-3 bg-rose-500/5 border border-rose-500/10 rounded-lg">
+            <span className="text-rose-400 font-medium">נשאר לתשלום</span>
+            <span className="text-rose-400 font-display font-bold">
+              {formatNis(expense.remaining_amount ?? 0)}
+            </span>
+          </div>
+        </div>
       </div>
-
-      <h3 className="text-2xl sm:text-xl md:text-lg font-bold text-primary-200 mb-4 sm:mb-3 pb-2 border-b border-white/10 pl-20 leading-snug">
-        {expense.name}
-      </h3>
-
-      <div className="space-y-2.5 sm:space-y-2">
-        <div className="flex justify-between items-center py-1">
-          <span className="text-gray-300 font-medium text-sm sm:text-xs">מחיר ליחידה:</span>
-          <span className="font-semibold text-gray-100 text-base sm:text-sm">{formatNis(expense.price_per_unit)}</span>
-        </div>
-
-        <div className="flex justify-between items-center py-1">
-          <span className="text-gray-300 font-medium text-sm sm:text-xs">כמות:</span>
-          <span className="font-semibold text-gray-100 text-base sm:text-sm">{expense.quantity}</span>
-        </div>
-
-        <div className="flex justify-between items-center pt-3 mt-2 border-t border-white/10">
-          <span className="text-primary-200 font-bold text-base sm:text-sm">סה"כ עלות:</span>
-          <span className="font-bold text-primary-300 text-lg sm:text-base">{formatNis(expense.total_cost ?? 0)}</span>
-        </div>
-
-        <div className="flex justify-between items-center bg-green-500/10 px-3 py-2 rounded-md -mx-1">
-          <span className="text-green-400 font-semibold text-sm sm:text-xs">שולם:</span>
-          <span className="font-bold text-green-300 text-base sm:text-sm">{formatNis(expense.amount_paid)}</span>
-        </div>
-
-        <div className="flex justify-between items-center border-t bg-rose-500/10 border-white/10 px-3 py-2 rounded-md -mx-1 mt-2">
-          <span className="text-rose-400 font-bold text-base sm:text-sm">נשאר לתשלום:</span>
-          <span className="font-bold text-rose-300 text-lg sm:text-base">{formatNis(expense.remaining_amount ?? 0)}</span>
-        </div>
-      </div>
-    </div>
+    </motion.div>
   );
 }
 

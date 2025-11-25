@@ -1,5 +1,11 @@
 {
+  "scripts": {
+    "dev": "concurrently \"npm run dev --prefix frontend\" \"npm run dev --prefix backend\""
+  },
   "dependencies": {
     "lucide-react": "^0.546.0"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.0"
   }
 }

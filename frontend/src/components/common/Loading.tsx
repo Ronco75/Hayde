@@ -1,18 +1,95 @@
-import spinner from '../../assets/spinner.gif';
+/**
+ * Loading Component
+ * Modern loading state with animated spinner and optional skeleton mode
+ */
 
-function Loading() {
-  return (
-    <div className="flex flex-col justify-center items-center min-h-screen bg-slate-950">
-      <div className="bg-slate-900 text-gray-100 rounded-2xl shadow-elev-2 border border-white/10 p-8 sm:p-7 flex flex-col items-center gap-4 sm:gap-3">
-        <img
-          src={spinner}
-          alt="טוען..."
-          className="w-20 h-20 sm:w-16 sm:h-16 opacity-90"
-        />
-        <p className="text-gray-100 font-semibold text-lg sm:text-base animate-pulse">
-          טוען...
-        </p>
+import { motion } from 'framer-motion';
+import { Loader2 } from 'lucide-react';
+
+interface LoadingProps {
+  fullscreen?: boolean;
+  message?: string;
+}
+
+function Loading({ fullscreen = true, message = 'טוען...' }: LoadingProps) {
+  if (fullscreen) {
+    return (
+      <div className="flex flex-col justify-center items-center min-h-screen bg-background-primary">
+        <motion.div
+          className="flex flex-col items-center gap-4"
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.3 }}
+        >
+          {/* Spinning Icon */}
+          <motion.div
+            animate={{ rotate: 360 }}
+            transition={{
+              duration: 1,
+              repeat: Infinity,
+              ease: 'linear'
+            }}
+          >
+            <Loader2 className="w-12 h-12 text-primary-500" />
+          </motion.div>
+
+          {/* Loading Text */}
+          <motion.p
+            className="text-gray-300 font-semibold text-lg"
+            animate={{ opacity: [0.5, 1, 0.5] }}
+            transition={{
+              duration: 1.5,
+              repeat: Infinity,
+              ease: 'easeInOut'
+            }}
+          >
+            {message}
+          </motion.p>
+
+          {/* Animated Dots */}
+          <div className="flex gap-2">
+            {[0, 1, 2].map((i) => (
+              <motion.div
+                key={i}
+                className="w-2 h-2 bg-primary-500 rounded-full"
+                animate={{
+                  y: [0, -10, 0],
+                  opacity: [0.3, 1, 0.3]
+                }}
+                transition={{
+                  duration: 0.8,
+                  repeat: Infinity,
+                  delay: i * 0.15,
+                  ease: 'easeInOut'
+                }}
+              />
+            ))}
+          </div>
+        </motion.div>
       </div>
+    );
+  }
+
+  // Inline loading (non-fullscreen)
+  return (
+    <div className="flex items-center justify-center py-8">
+      <motion.div
+        className="flex items-center gap-3"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+      >
+        <motion.div
+          animate={{ rotate: 360 }}
+          transition={{
+            duration: 1,
+            repeat: Infinity,
+            ease: 'linear'
+          }}
+        >
+          <Loader2 className="w-6 h-6 text-primary-500" />
+        </motion.div>
+        <span className="text-gray-400 text-sm">{message}</span>
+      </motion.div>
     </div>
   );
 }

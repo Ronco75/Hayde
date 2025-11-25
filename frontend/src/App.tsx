@@ -1,4 +1,10 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+/**
+ * App - Main application component with animated route transitions
+ * Includes AuthProvider, Toast notifications, and AnimatePresence for page transitions
+ */
+
+import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+import { AnimatePresence } from 'framer-motion';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from './contexts/AuthContext';
 import ProtectedRoute from './components/auth/ProtectedRoute';
@@ -18,6 +24,36 @@ import ExpensesPage from './pages/ExpensesPage';
 import GuestsPage from './pages/GuestsPage';
 import NotFoundPage from './pages/NotFoundPage';
 
+// Animated Routes Component
+function AnimatedRoutes() {
+  const location = useLocation();
+
+  return (
+    <AnimatePresence mode="wait">
+      <Routes location={location} key={location.pathname}>
+        {/* Public Routes */}
+        <Route path="/" element={<HomePage />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
+
+        {/* Protected Routes - require authentication */}
+        <Route element={<ProtectedRoute />}>
+          <Route path="/wedding-setup" element={<WeddingSetupPage />} />
+          <Route path="/dashboard" element={<DashboardPage />} />
+          <Route path="/categories" element={<CategoriesPage />} />
+          <Route path="/categories/:categoryId/expenses" element={<ExpensesPage />} />
+          <Route path="/guests" element={<GuestsPage />} />
+        </Route>
+
+        {/* 404 Catch-all route - must be last */}
+        <Route path="*" element={<NotFoundPage />} />
+      </Routes>
+    </AnimatePresence>
+  );
+}
+
 function App() {
   return (
     <>
@@ -30,9 +66,11 @@ function App() {
           // Default options for all toasts
           duration: 4000,
           style: {
-            background: '#1e293b',
+            background: '#16161D',
             color: '#fff',
-            border: '1px solid #334155',
+            border: '1px solid rgba(168, 85, 247, 0.2)',
+            borderRadius: '12px',
+            fontFamily: '"DM Sans", "Rubik", sans-serif',
           },
           // Specific options by type
           success: {
@@ -43,7 +81,7 @@ function App() {
             },
           },
           error: {
-            duration: 3000,
+            duration: 5000,
             iconTheme: {
               primary: '#ef4444',
               secondary: '#fff',
@@ -54,26 +92,7 @@ function App() {
 
       <AuthProvider>
         <Router>
-          <Routes>
-            {/* Public Routes */}
-            <Route path="/" element={<HomePage />} />
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/register" element={<RegisterPage />} />
-            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-            <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
-
-            {/* Protected Routes - require authentication */}
-            <Route element={<ProtectedRoute />}>
-              <Route path="/wedding-setup" element={<WeddingSetupPage />} />
-              <Route path="/dashboard" element={<DashboardPage />} />
-              <Route path="/categories" element={<CategoriesPage />} />
-              <Route path="/categories/:categoryId/expenses" element={<ExpensesPage />} />
-              <Route path="/guests" element={<GuestsPage />} />
-            </Route>
-
-            {/* 404 Catch-all route - must be last */}
-            <Route path="*" element={<NotFoundPage />} />
-          </Routes>
+          <AnimatedRoutes />
         </Router>
       </AuthProvider>
     </>
