@@ -407,11 +407,13 @@ export const getGuestStats = async (req: Request, res: Response) => {
 
     if (!wedding) {
       res.json({
-        total: 0,
-        confirmed: 0,
-        declined: 0,
-        pending: 0,
         total_guests: 0,
+        total_attendees: 0,
+        confirmed_guests: 0,
+        confirmed_attendees: 0,
+        declined_guests: 0,
+        pending_guests: 0,
+        invitations_sent: 0,
       });
       return;
     }
@@ -421,13 +423,20 @@ export const getGuestStats = async (req: Request, res: Response) => {
       where: { weddingId: wedding.id },
     });
 
-    // Calculate statistics
+    // Filter guests by status
+    const confirmedGuests = guests.filter(g => g.rsvpStatus === 'confirmed');
+    const declinedGuests = guests.filter(g => g.rsvpStatus === 'declined');
+    const pendingGuests = guests.filter(g => g.rsvpStatus === 'pending');
+
+    // Calculate statistics with correct field names
     const stats = {
-      total: guests.length,
-      confirmed: guests.filter(g => g.rsvpStatus === 'confirmed').length,
-      declined: guests.filter(g => g.rsvpStatus === 'declined').length,
-      pending: guests.filter(g => g.rsvpStatus === 'pending').length,
-      total_guests: guests.reduce((sum, g) => sum + g.numberOfGuests, 0),
+      total_guests: guests.length,                                              // Number of guest records
+      total_attendees: guests.reduce((sum, g) => sum + g.numberOfGuests, 0),    // Total number of people
+      confirmed_guests: confirmedGuests.length,                                 // Number of confirmed records
+      confirmed_attendees: confirmedGuests.reduce((sum, g) => sum + g.numberOfGuests, 0), // Total confirmed people
+      declined_guests: declinedGuests.length,                                   // Number of declined records
+      pending_guests: pendingGuests.length,                                     // Number of pending records
+      invitations_sent: guests.filter(g => g.invitationSentAt !== null).length, // Invitations sent
     };
 
     res.json(stats);
