@@ -173,7 +173,7 @@ function CategoriesPage() {
                     <span className="text-gray-400 text-sm font-medium">סה"כ עלות</span>
                     <Wallet className="w-5 h-5 text-primary-400" />
                   </div>
-                  <div className="text-primary-400 font-display font-bold text-3xl">
+                  <div className="text-primary-400 font-numeric font-bold text-3xl">
                     {formatNis(overallTotals.total_cost)}
                   </div>
                 </motion.div>
@@ -188,7 +188,7 @@ function CategoriesPage() {
                     <span className="text-emerald-400 text-sm font-medium">שולם</span>
                     <CheckCircle className="w-5 h-5 text-emerald-400" />
                   </div>
-                  <div className="text-emerald-400 font-display font-bold text-3xl">
+                  <div className="text-emerald-400 font-numeric font-bold text-3xl">
                     {formatNis(overallTotals.amount_paid)}
                   </div>
                   <div className="mt-2 flex items-center gap-1 text-emerald-400 text-xs font-semibold">
@@ -207,7 +207,7 @@ function CategoriesPage() {
                     <span className="text-rose-400 text-sm font-medium">נשאר לתשלום</span>
                     <AlertCircle className="w-5 h-5 text-rose-400" />
                   </div>
-                  <div className="text-rose-400 font-display font-bold text-3xl">
+                  <div className="text-rose-400 font-numeric font-bold text-3xl">
                     {formatNis(overallTotals.remaining)}
                   </div>
                 </motion.div>

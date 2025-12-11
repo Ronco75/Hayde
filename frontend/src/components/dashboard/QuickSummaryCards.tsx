@@ -251,7 +251,7 @@ function QuickSummaryCards({ className = '' }: QuickSummaryCardsProps) {
                     {card.title}
                   </p>
                   <motion.h3
-                    className={`${variantClasses.text} font-display font-bold text-2xl sm:text-3xl`}
+                    className={`${variantClasses.text} font-numeric font-bold text-2xl sm:text-3xl`}
                     variants={scaleIn}
                   >
                     {card.value}

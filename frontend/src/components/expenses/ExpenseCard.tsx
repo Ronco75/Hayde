@@ -90,24 +90,24 @@ function ExpenseCard({ expense, onEdit, onDelete }: ExpenseCardProps) {
         <div className="space-y-3">
           <div className="flex justify-between text-sm">
             <span className="text-gray-400">מחיר ליחידה</span>
-            <span className="text-gray-200 font-semibold">{formatNis(expense.price_per_unit)}</span>
+            <span className="text-gray-200 font-semibold font-numeric">{formatNis(expense.price_per_unit)}</span>
           </div>
 
           <div className="flex justify-between text-sm">
             <span className="text-gray-400">כמות</span>
-            <span className="text-gray-200 font-semibold">{expense.quantity}</span>
+            <span className="text-gray-200 font-semibold font-numeric">{expense.quantity}</span>
           </div>
 
           <div className="flex justify-between p-3 bg-primary-500/5 border border-primary-500/10 rounded-lg">
             <span className="text-primary-400 font-medium">סה"כ עלות</span>
-            <span className="text-primary-400 font-display font-bold text-lg">
+            <span className="text-primary-400 font-numeric font-bold text-lg">
               {formatNis(expense.total_cost ?? 0)}
             </span>
           </div>
 
           <div className="flex justify-between p-3 bg-emerald-500/5 border border-emerald-500/10 rounded-lg">
             <span className="text-emerald-400 font-medium">שולם</span>
-            <span className="text-emerald-400 font-display font-semibold">
+            <span className="text-emerald-400 font-numeric font-semibold">
               {formatNis(expense.amount_paid)}
             </span>
           </div>
@@ -130,7 +130,7 @@ function ExpenseCard({ expense, onEdit, onDelete }: ExpenseCardProps) {
 
           <div className="flex justify-between p-3 bg-rose-500/5 border border-rose-500/10 rounded-lg">
             <span className="text-rose-400 font-medium">נשאר לתשלום</span>
-            <span className="text-rose-400 font-display font-bold">
+            <span className="text-rose-400 font-numeric font-bold">
               {formatNis(expense.remaining_amount ?? 0)}
             </span>
           </div>

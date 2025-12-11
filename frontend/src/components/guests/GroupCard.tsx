@@ -35,7 +35,7 @@ function GroupCard({ group, guestCount, onEdit, onDelete }: GroupCardProps) {
             {/* Guest Count */}
             <div className="flex items-center gap-2 text-gray-400 mb-4">
                 <Users size={16} />
-                <span className="text-sm">
+                <span className="text-sm font-numeric">
                     {guestCount === 0 ? 'אין מוזמנים' : `${guestCount} מוזמנים`}
                 </span>
             </div>

@@ -12,6 +12,8 @@ export default {
         body: ['DM Sans', 'Rubik', 'sans-serif'],
         sans: ['DM Sans', 'Rubik', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'sans-serif'],
         hebrew: ['Rubik', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+        mono: ['Inter', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', 'monospace'],
+        numeric: ['Inter', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', 'monospace'],
       },
       colors: {
         primary: {

@@ -62,7 +62,7 @@ function GuestCard({ guest, groupName, onEdit, onDelete }: GuestCardProps) {
       {/* Phone Number */}
       <div className="flex items-center gap-2 text-gray-300 mb-2">
         <Phone size={16} />
-        <span className="text-sm">{formatPhoneDisplay(guest.phone_number)}</span>
+        <span className="text-sm font-numeric">{formatPhoneDisplay(guest.phone_number)}</span>
       </div>
 
       {/* Group */}

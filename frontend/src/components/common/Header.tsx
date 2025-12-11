@@ -79,7 +79,35 @@ function Header({ title }: HeaderProps) {
         <div className="bg-background-primary/80">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex items-center justify-between h-16">
-              {/* Left: User Info & Logout (appears on right in RTL) */}
+              {/* Left: Navigation */}
+              <nav className="hidden md:flex items-center gap-2">
+                {isAuthenticated && navigationItems.map((item) => {
+                  const Icon = item.icon;
+                  return (
+                    <Button
+                      key={item.path}
+                      variant={isActive(item.path) ? 'primary' : 'ghost'}
+                      size="sm"
+                      onClick={() => navigate(item.path)}
+                      leftIcon={<Icon className="w-4 h-4" />}
+                    >
+                      {item.label}
+                    </Button>
+                  );
+                })}
+              </nav>
+
+              {/* Center: Title */}
+              <motion.h1
+                className="absolute left-1/2 -translate-x-1/2 text-xl sm:text-2xl font-display font-bold text-gray-50"
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3 }}
+              >
+                {title}
+              </motion.h1>
+
+              {/* Right: User Info & Logout */}
               <div className="flex items-center gap-4">
                 {isAuthenticated && user && (
                   <>
@@ -89,7 +117,7 @@ function Header({ title }: HeaderProps) {
                         <>
                           <div className="flex items-center gap-2">
                             <span className="text-sm font-semibold text-gradient-purple">
-                              חתונת {wedding.bride_name} ו{wedding.groom_name}
+                              החתונה של {wedding.bride_name} ו{wedding.groom_name}
                             </span>
                             <Heart className="w-4 h-4 text-rose-400" />
                           </div>
@@ -135,34 +163,6 @@ function Header({ title }: HeaderProps) {
                   </>
                 )}
               </div>
-
-              {/* Center: Title */}
-              <motion.h1
-                className="absolute left-1/2 -translate-x-1/2 text-xl sm:text-2xl font-display font-bold text-gray-50"
-                initial={{ opacity: 0, y: -20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3 }}
-              >
-                {title}
-              </motion.h1>
-
-              {/* Right: Navigation (appears on left in RTL) - Desktop */}
-              <nav className="hidden md:flex items-center gap-2">
-                {isAuthenticated && navigationItems.map((item) => {
-                  const Icon = item.icon;
-                  return (
-                    <Button
-                      key={item.path}
-                      variant={isActive(item.path) ? 'primary' : 'ghost'}
-                      size="sm"
-                      onClick={() => navigate(item.path)}
-                      leftIcon={<Icon className="w-4 h-4" />}
-                    >
-                      {item.label}
-                    </Button>
-                  );
-                })}
-              </nav>
             </div>
           </div>
         </div>
@@ -181,14 +181,14 @@ function Header({ title }: HeaderProps) {
             {/* Wedding Info - Mobile */}
             {wedding && (
               <div className="pb-3 border-b border-border-subtle text-right">
-                <div className="flex items-center justify-end gap-2 mb-1">
+                <div className="flex items-center justify-center gap-2 mb-1">
                   <span className="text-sm font-semibold text-gradient-purple">
-                    חתונת {wedding.bride_name} ו{wedding.groom_name}
+                    החתונה של {wedding.bride_name} ו{wedding.groom_name}
                   </span>
                   <Heart className="w-4 h-4 text-rose-400" />
                 </div>
                 {daysUntilWedding !== null && (
-                  <div className="flex items-center justify-end gap-1.5">
+                  <div className="flex items-center justify-center gap-1.5">
                     <span className="text-xs text-gray-400">
                       {daysUntilWedding > 0
                         ? `${daysUntilWedding} ימים עד החתונה`

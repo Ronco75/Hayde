@@ -96,19 +96,19 @@ function ExpensesPieChart({ className = '' }: ExpensesPieChartProps) {
           <div className="space-y-2 text-sm">
             <div className="flex justify-between gap-6">
               <span className="text-gray-400">סה"כ עלות:</span>
-              <span className="text-gray-200 font-semibold">
+              <span className="text-gray-200 font-semibold font-numeric">
                 {formatNis(data.totalCost)}
               </span>
             </div>
             <div className="flex justify-between gap-6">
               <span className="text-emerald-400">שולם:</span>
-              <span className="text-emerald-300 font-semibold">
+              <span className="text-emerald-300 font-semibold font-numeric">
                 {formatNis(data.amountPaid)}
               </span>
             </div>
             <div className="flex justify-between gap-6">
               <span className="text-rose-400">נשאר:</span>
-              <span className="text-rose-300 font-semibold">
+              <span className="text-rose-300 font-semibold font-numeric">
                 {formatNis(data.remaining)}
               </span>
             </div>
@@ -218,7 +218,7 @@ function ExpensesPieChart({ className = '' }: ExpensesPieChartProps) {
               transition={{ duration: 0.2 }}
             />
             <span className="text-gray-300 flex-1 truncate">{item.name}</span>
-            <span className="text-primary-400 font-semibold">
+            <span className="text-primary-400 font-numeric font-semibold">
               {formatNis(item.value)}
             </span>
           </motion.div>

@@ -62,7 +62,7 @@ function CategoryCard({ category, onEdit, onDelete, totals }: CategoryCardProps)
                 {category.name}
               </h3>
               {hasTotals && (
-                <p className="text-xs text-gray-500">
+                <p className="text-xs text-gray-500 font-numeric">
                   {totals.expense_count || 0} הוצאות
                 </p>
               )}
@@ -126,7 +126,7 @@ function CategoryCard({ category, onEdit, onDelete, totals }: CategoryCardProps)
             {/* Total Cost */}
             <div className="flex items-center justify-between p-3 bg-primary-500/5 border border-primary-500/10 rounded-lg">
               <span className="text-sm text-gray-400 font-medium">סה"כ עלות</span>
-              <span className="text-primary-400 font-display font-semibold text-lg">
+              <span className="text-primary-400 font-numeric font-semibold text-lg">
                 {formatNis(totals.total_cost)}
               </span>
             </div>
@@ -134,7 +134,7 @@ function CategoryCard({ category, onEdit, onDelete, totals }: CategoryCardProps)
             {/* Amount Paid */}
             <div className="flex items-center justify-between p-3 bg-emerald-500/5 border border-emerald-500/10 rounded-lg">
               <span className="text-sm text-emerald-400 font-medium">שולם</span>
-              <span className="text-emerald-400 font-display font-semibold text-lg">
+              <span className="text-emerald-400 font-numeric font-semibold text-lg">
                 {formatNis(totals.amount_paid)}
               </span>
             </div>
@@ -142,7 +142,7 @@ function CategoryCard({ category, onEdit, onDelete, totals }: CategoryCardProps)
             {/* Remaining */}
             <div className="flex items-center justify-between p-3 bg-rose-500/5 border border-rose-500/10 rounded-lg">
               <span className="text-sm text-rose-400 font-medium">נשאר</span>
-              <span className="text-rose-400 font-display font-semibold text-lg">
+              <span className="text-rose-400 font-numeric font-semibold text-lg">
                 {formatNis(totals.remaining_amount)}
               </span>
             </div>

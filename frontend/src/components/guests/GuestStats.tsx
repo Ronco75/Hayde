@@ -13,8 +13,8 @@ function GuestStats({ stats }: GuestStatsProps) {
         <div className="bg-slate-800/70 border border-white/10 rounded-lg p-5 flex flex-col justify-between min-h-[120px] hover:bg-slate-800 transition-colors">
           <div className="text-gray-400 text-sm font-medium mb-2">סה"כ מוזמנים</div>
           <div className="flex flex-col">
-            <div className="text-primary-300 font-extrabold text-3xl mb-1">{stats.total_attendees}</div>
-            <div className="text-gray-500 text-xs">
+            <div className="text-primary-300 font-extrabold text-3xl mb-1 font-numeric">{stats.total_attendees}</div>
+            <div className="text-gray-500 text-xs font-numeric">
               {stats.total_guests} רשומות
             </div>
           </div>
@@ -24,8 +24,8 @@ function GuestStats({ stats }: GuestStatsProps) {
         <div className="bg-green-500/10 border border-green-500/20 rounded-lg p-5 flex flex-col justify-between min-h-[120px] hover:bg-green-500/15 transition-colors">
           <div className="text-green-400 text-sm font-medium mb-2">אישרו הגעה</div>
           <div className="flex flex-col">
-            <div className="text-green-300 font-extrabold text-3xl mb-1">{stats.confirmed_attendees}</div>
-            <div className="text-green-400/60 text-xs">
+            <div className="text-green-300 font-extrabold text-3xl mb-1 font-numeric">{stats.confirmed_attendees}</div>
+            <div className="text-green-400/60 text-xs font-numeric">
               {stats.confirmed_guests} רשומות
             </div>
           </div>
@@ -35,8 +35,8 @@ function GuestStats({ stats }: GuestStatsProps) {
         <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-5 flex flex-col justify-between min-h-[120px] hover:bg-red-500/15 transition-colors">
           <div className="text-red-400 text-sm font-medium mb-2">לא מגיעים</div>
           <div className="flex flex-col">
-            <div className="text-red-300 font-extrabold text-3xl mb-1">{stats.declined_guests}</div>
-            <div className="text-red-400/60 text-xs">
+            <div className="text-red-300 font-extrabold text-3xl mb-1 font-numeric">{stats.declined_guests}</div>
+            <div className="text-red-400/60 text-xs font-numeric">
               {stats.declined_guests} {stats.declined_guests === 1 ? 'רשומה' : 'רשומות'}
             </div>
           </div>
@@ -46,8 +46,8 @@ function GuestStats({ stats }: GuestStatsProps) {
         <div className="bg-amber-500/10 border border-amber-500/20 rounded-lg p-5 flex flex-col justify-between min-h-[120px] hover:bg-amber-500/15 transition-colors">
           <div className="text-amber-400 text-sm font-medium mb-2">ממתינים לתשובה</div>
           <div className="flex flex-col">
-            <div className="text-amber-300 font-extrabold text-3xl mb-1">{stats.pending_guests}</div>
-            <div className="text-amber-400/60 text-xs">
+            <div className="text-amber-300 font-extrabold text-3xl mb-1 font-numeric">{stats.pending_guests}</div>
+            <div className="text-amber-400/60 text-xs font-numeric">
               {stats.pending_guests} {stats.pending_guests === 1 ? 'רשומה' : 'רשומות'}
             </div>
           </div>
