@@ -99,6 +99,7 @@ model Guest {
   invitationSentAt DateTime? @map("invitation_sent_at") @db.Timestamp(6)
   reminderSentAt   DateTime? @map("reminder_sent_at") @db.Timestamp(6)
   notes            String?
+  giftAmount       Decimal?  @default(0) @map("gift_amount") @db.Decimal(10, 2)
   createdAt        DateTime  @default(now()) @map("created_at") @db.Timestamp(6)
   
   wedding          Wedding   @relation(fields: [weddingId], references: [id], onDelete: Cascade)

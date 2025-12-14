@@ -222,7 +222,7 @@ export const getCategoryTotals = async (req: Request, res: Response) => {
     });
 
     // Group by category and calculate totals
-    const categoryTotals = new Map<number, { total_cost: number; amount_paid: number }>();
+    const categoryTotals = new Map<number, { total_cost: number; amount_paid: number; expense_count: number }>();
 
     expenses.forEach((expense) => {
       const totalCost = expense.pricePerUnit.toNumber() * expense.quantity;
@@ -232,10 +232,12 @@ export const getCategoryTotals = async (req: Request, res: Response) => {
       if (existing) {
         existing.total_cost += totalCost;
         existing.amount_paid += amountPaid;
+        existing.expense_count += 1;
       } else {
         categoryTotals.set(expense.categoryId, {
           total_cost: totalCost,
           amount_paid: amountPaid,
+          expense_count: 1,
         });
       }
     });
@@ -245,7 +247,8 @@ export const getCategoryTotals = async (req: Request, res: Response) => {
       category_id: categoryId,
       total_cost: totals.total_cost,
       amount_paid: totals.amount_paid,
-      remaining: totals.total_cost - totals.amount_paid,
+      remaining_amount: totals.total_cost - totals.amount_paid,
+      expense_count: totals.expense_count,
     }));
 
     res.json(result);

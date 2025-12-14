@@ -135,6 +135,13 @@ export const updateRsvpStatusSchema = z.object({
   rsvp_status: rsvpStatusSchema,
 });
 
+// Gift amount update schema (for PATCH /guests/:id/gift)
+export const updateGiftAmountSchema = z.object({
+  gift_amount: z.number()
+    .nonnegative('סכום המתנה חייב להיות חיובי')
+    .finite('יש להזין סכום תקין'),
+});
+
 // ============= IMPORT SCHEMAS =============
 
 /**
@@ -244,6 +251,7 @@ export type CreateGuestInput = z.infer<typeof createGuestSchema>;
 export type UpdateGuestInput = z.infer<typeof updateGuestSchema>;
 
 export type RsvpStatus = z.infer<typeof rsvpStatusSchema>;
+export type UpdateGiftAmountInput = z.infer<typeof updateGiftAmountSchema>;
 
 export type ConfirmImportInput = z.infer<typeof confirmImportSchema>;
 

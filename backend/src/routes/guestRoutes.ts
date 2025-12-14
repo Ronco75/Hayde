@@ -6,13 +6,14 @@ import {
   getGuestById,
   updateGuest,
   updateRsvpStatus,
+  updateGiftAmount,
   markInvitationSent,
   markReminderSent,
   deleteGuest,
   getGuestStats
 } from '../controllers/guestController';
 import { validate, validateId, validateGroupId } from '../middleware/validation';
-import { createGuestSchema, updateGuestSchema, updateRsvpStatusSchema } from '../validators/schemas';
+import { createGuestSchema, updateGuestSchema, updateRsvpStatusSchema, updateGiftAmountSchema } from '../validators/schemas';
 import { asyncHandler } from '../middleware/errorHandler';
 import { authenticate } from '../middleware/authMiddleware';
 
@@ -41,6 +42,9 @@ router.put('/:id', validateId, validate(updateGuestSchema), asyncHandler(updateG
 
 // PATCH /api/guests/:id/rsvp - Update RSVP status only
 router.patch('/:id/rsvp', validateId, validate(updateRsvpStatusSchema), asyncHandler(updateRsvpStatus));
+
+// PATCH /api/guests/:id/gift - Update gift amount (only for confirmed guests)
+router.patch('/:id/gift', validateId, validate(updateGiftAmountSchema), asyncHandler(updateGiftAmount));
 
 // PATCH /api/guests/:id/invitation - Mark invitation as sent
 router.patch('/:id/invitation', validateId, asyncHandler(markInvitationSent));

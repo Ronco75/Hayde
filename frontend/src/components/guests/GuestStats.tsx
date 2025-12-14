@@ -6,8 +6,8 @@ interface GuestStatsProps {
 
 function GuestStats({ stats }: GuestStatsProps) {
   return (
-    <div className="bg-slate-900 border border-white/10 rounded-xl shadow-elev-2 p-6 mb-8">
-      <h2 className="text-xl font-bold text-primary-200 mb-4">סטטיסטיקת מוזמנים</h2>
+    <div className="bg-slate-900 border border-white/10 rounded-xl shadow-elev-2 p-6 w-full">
+      <h2 className="text-xl font-bold text-primary-200 mb-4 text-center">סטטיסטיקת מוזמנים</h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Total Guests */}
         <div className="bg-slate-800/70 border border-white/10 rounded-lg p-5 flex flex-col justify-between min-h-[120px] hover:bg-slate-800 transition-colors">

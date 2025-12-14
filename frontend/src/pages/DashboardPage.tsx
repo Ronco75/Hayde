@@ -83,7 +83,7 @@ function DashboardPage() {
             {/* Guest Stats */}
             <motion.div
               variants={staggerItem}
-              className="bg-surface-primary border border-border-subtle rounded-2xl shadow-xl p-6 hover:shadow-2xl transition-shadow duration-300"
+              className="w-full"
             >
               <GuestStatsComponent stats={stats} />
             </motion.div>

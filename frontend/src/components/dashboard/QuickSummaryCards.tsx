@@ -17,7 +17,8 @@ import {
   UserCheck,
   TrendingUp,
   Wallet,
-  CreditCard
+  CreditCard,
+  Gift
 } from 'lucide-react';
 import Skeleton from '../common/Skeleton';
 
@@ -32,6 +33,8 @@ interface SummaryData {
   totalGuests: number;
   confirmedAttendees: number;
   budgetPerGuest: number;
+  totalGifts: number;
+  netCost: number;
 }
 
 interface StatCard {
@@ -54,6 +57,8 @@ function QuickSummaryCards({ className = '' }: QuickSummaryCardsProps) {
     totalGuests: 0,
     confirmedAttendees: 0,
     budgetPerGuest: 0,
+    totalGifts: 0,
+    netCost: 0,
   });
   const [loading, setLoading] = useState(true);
 
@@ -81,6 +86,10 @@ function QuickSummaryCards({ className = '' }: QuickSummaryCardsProps) {
         ? totalBudget / guestStats.confirmed_attendees
         : 0;
 
+      // Get total gifts from guest stats
+      const totalGifts = guestStats.total_gifts || 0;
+      const netCost = totalBudget - totalGifts;
+
       setSummaryData({
         totalBudget,
         totalPaid,
@@ -88,6 +97,8 @@ function QuickSummaryCards({ className = '' }: QuickSummaryCardsProps) {
         totalGuests: guestStats.total_attendees,
         confirmedAttendees: guestStats.confirmed_attendees,
         budgetPerGuest,
+        totalGifts,
+        netCost,
       });
     } catch (error) {
       console.error('Error loading summary data:', error);
@@ -99,8 +110,8 @@ function QuickSummaryCards({ className = '' }: QuickSummaryCardsProps) {
   if (loading) {
     return (
       <div className={`mb-8 ${className}`}>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {[...Array(6)].map((_, i) => (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {[...Array(8)].map((_, i) => (
             <Skeleton key={i} variant="card" />
           ))}
         </div>
@@ -167,6 +178,20 @@ function QuickSummaryCards({ className = '' }: QuickSummaryCardsProps) {
       icon: TrendingUp,
       variant: 'gold',
     },
+    {
+      title: 'סה"כ מתנות',
+      value: formatNis(summaryData.totalGifts || 0),
+      subtitle: 'מאורחים מאושרים',
+      icon: Gift,
+      variant: 'gold',
+    },
+    {
+      title: 'עלות נטו',
+      value: formatNis(summaryData.netCost || 0),
+      subtitle: summaryData.netCost <= 0 ? 'המתנות כיסו הכל!' : 'תקציב לאחר מתנות',
+      icon: CreditCard,
+      variant: summaryData.netCost <= 0 ? 'emerald' : 'rose',
+    },
   ];
 
   const getVariantClasses = (variant: StatCard['variant']) => {
@@ -213,7 +238,7 @@ function QuickSummaryCards({ className = '' }: QuickSummaryCardsProps) {
   return (
     <div className={`mb-8 ${className}`}>
       <motion.div
-        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
+        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"
         variants={staggerContainer}
         initial="hidden"
         animate="visible"

@@ -1,10 +1,11 @@
 import { Request, Response, Router } from 'express';
 import prisma from '../config/db';
-import { NotFoundError } from '../errors/customErrors';
+import { NotFoundError, UnprocessableEntityError } from '../errors/customErrors';
 import { handlePrismaCreateError, handlePrismaUpdateError, handlePrismaDeleteError } from '../errors/prismaErrorHandler';
-import { CreateGuestInput, UpdateGuestInput } from '../validators/schemas';
+import { CreateGuestInput, UpdateGuestInput, UpdateGiftAmountInput } from '../validators/schemas';
 import { transformGuest, transformGuests } from '../utils/transformers';
 import { authenticate } from '../middleware/authMiddleware';
+import { Decimal } from '@prisma/client/runtime/library';
 
 const router = Router();
 router.use(authenticate);
@@ -357,6 +358,62 @@ export const markReminderSent = async (req: Request, res: Response) => {
 };
 
 /**
+ * Update gift amount for a guest
+ * PATCH /api/guests/:id/gift
+ *
+ * Business Rule: Only allows updating gift for confirmed guests
+ */
+export const updateGiftAmount = async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const { gift_amount } = req.body as UpdateGiftAmountInput;
+
+  try {
+    // Get the user's wedding
+    const wedding = await prisma.wedding.findUnique({
+      where: { userId: req.user!.userId },
+    });
+
+    if (!wedding) {
+      res.status(404).json({ error: 'Wedding not found' });
+      return;
+    }
+
+    // Fetch guest to check RSVP status
+    const guest = await prisma.guest.findFirst({
+      where: {
+        id: parseInt(id),
+        weddingId: wedding.id,
+      },
+    });
+
+    if (!guest) {
+      res.status(404).json({ error: 'Guest not found or you do not have permission to update it' });
+      return;
+    }
+
+    // BUSINESS RULE: Only confirmed guests can have gift amount set
+    if (guest.rsvpStatus !== 'confirmed') {
+      throw new UnprocessableEntityError('לא ניתן לעדכן סכום מתנה עבור אורח שטרם אישר הגעה');
+    }
+
+    // Update gift amount
+    const updatedGuest = await prisma.guest.update({
+      where: { id: parseInt(id) },
+      data: { giftAmount: gift_amount },
+    });
+
+    res.json(transformGuest(updatedGuest));
+
+  } catch (error) {
+    // Re-throw UnprocessableEntityError as-is
+    if (error instanceof UnprocessableEntityError) {
+      throw error;
+    }
+    handlePrismaUpdateError(error, 'Guest gift amount', id);
+  }
+};
+
+/**
  * Delete a guest
  * DELETE /api/guests/:id
  */
@@ -414,6 +471,7 @@ export const getGuestStats = async (req: Request, res: Response) => {
         declined_guests: 0,
         pending_guests: 0,
         invitations_sent: 0,
+        total_gifts: 0,
       });
       return;
     }
@@ -428,6 +486,14 @@ export const getGuestStats = async (req: Request, res: Response) => {
     const declinedGuests = guests.filter(g => g.rsvpStatus === 'declined');
     const pendingGuests = guests.filter(g => g.rsvpStatus === 'pending');
 
+    // Calculate total gifts (only from confirmed guests)
+    const totalGifts = confirmedGuests.reduce((sum, g) => {
+      const giftAmount = g.giftAmount instanceof Decimal
+        ? g.giftAmount.toNumber()
+        : g.giftAmount ? Number(g.giftAmount) : 0;
+      return sum + giftAmount;
+    }, 0);
+
     // Calculate statistics with correct field names
     const stats = {
       total_guests: guests.length,                                              // Number of guest records
@@ -437,6 +503,7 @@ export const getGuestStats = async (req: Request, res: Response) => {
       declined_guests: declinedGuests.length,                                   // Number of declined records
       pending_guests: pendingGuests.length,                                     // Number of pending records
       invitations_sent: guests.filter(g => g.invitationSentAt !== null).length, // Invitations sent
+      total_gifts: totalGifts,                                                  // Total gift amount from confirmed guests
     };
 
     res.json(stats);

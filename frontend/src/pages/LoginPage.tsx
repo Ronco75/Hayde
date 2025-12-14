@@ -191,25 +191,33 @@ const LoginPage: React.FC = () => {
             {/* Form */}
             <form onSubmit={handleSubmit} className="space-y-6">
               {/* Email Field */}
-              <Input
-                type="email"
-                name="email"
-                label="כתובת מייל"
-                value={formData.email}
-                onChange={handleInputChange}
-                leftIcon={<Mail className="w-5 h-5" />}
-                placeholder="example@email.com"
-                required
-                disabled={loading}
-                fullWidth
-              />
+              <div>
+                <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-2 text-right">
+                  כתובת מייל <span className="text-red-400">*</span>
+                </label>
+                <Input
+                  id="email"
+                  type="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleInputChange}
+                  leftIcon={<Mail className="w-5 h-5" />}
+                  placeholder="example@email.com"
+                  required
+                  disabled={loading}
+                  fullWidth
+                />
+              </div>
 
               {/* Password Field */}
               <div>
+                <label htmlFor="password" className="block text-sm font-medium text-gray-300 mb-2 text-right">
+                  סיסמה <span className="text-red-400">*</span>
+                </label>
                 <Input
+                  id="password"
                   type={showPassword ? 'text' : 'password'}
                   name="password"
-                  label="סיסמה"
                   value={formData.password}
                   onChange={handleInputChange}
                   leftIcon={<Lock className="w-5 h-5" />}

@@ -218,7 +218,9 @@ function GuestsPage() {
         <Header title="מוזמנים" />
         
         {/* Guest Stats */}
-        <GuestStats stats={stats} />
+        <div className="mb-8">
+          <GuestStats stats={stats} />
+        </div>
 
         {/* Guest List */}
         <GuestList

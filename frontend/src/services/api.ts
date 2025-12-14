@@ -12,6 +12,7 @@ import type {
   CreateGuestDto,
   UpdateGuestDto,
   UpdateRsvpDto,
+  UpdateGiftAmountDto,
   CreateExpenseDto,
   UpdateExpenseDto,
   ImportPreviewResponse,
@@ -198,8 +199,12 @@ export const guestsApi = {
       axios.put<Guest>(`${API_URL}/guests/${id}`, data),
 
     // Update only RSVP status
-    updateRsvp: (id: number, data: UpdateRsvpDto) => 
+    updateRsvp: (id: number, data: UpdateRsvpDto) =>
       axios.patch<Guest>(`${API_URL}/guests/${id}/rsvp`, data),
+
+    // Update gift amount (only for confirmed guests)
+    updateGiftAmount: (id: number, data: UpdateGiftAmountDto) =>
+      axios.patch<Guest>(`${API_URL}/guests/${id}/gift`, data),
 
     // Mark invitation as sent
     markInvitationSent: (id: number) => 

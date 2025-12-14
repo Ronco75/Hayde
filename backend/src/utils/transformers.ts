@@ -1,4 +1,5 @@
 import { Decimal } from '@prisma/client/runtime/library';
+import type { Decimal as DecimalType } from '@prisma/client/runtime/library';
 import type { Category as PrismaCategory, Expense as PrismaExpense, Group as PrismaGroup, Guest as PrismaGuest, Wedding as PrismaWedding } from '@prisma/client';
 
 /**
@@ -102,10 +103,16 @@ export interface GuestResponse {
   invitation_sent_at: string | null;
   reminder_sent_at: string | null;
   notes: string | null;
+  gift_amount: number;
   created_at: string;
 }
 
 export function transformGuest(guest: PrismaGuest): GuestResponse {
+  // Convert Decimal gift amount to number
+  const giftAmount = guest.giftAmount instanceof Decimal
+    ? guest.giftAmount.toNumber()
+    : guest.giftAmount ? Number(guest.giftAmount) : 0;
+
   return {
     id: guest.id,
     name: guest.name,
@@ -116,6 +123,7 @@ export function transformGuest(guest: PrismaGuest): GuestResponse {
     invitation_sent_at: guest.invitationSentAt ? guest.invitationSentAt.toISOString() : null,
     reminder_sent_at: guest.reminderSentAt ? guest.reminderSentAt.toISOString() : null,
     notes: guest.notes,
+    gift_amount: giftAmount,
     created_at: guest.createdAt.toISOString(),
   };
 }
@@ -134,6 +142,7 @@ export interface GuestStatsResponse {
   declined_guests: number;
   pending_guests: number;
   invitations_sent: number;
+  total_gifts: number;
 }
 
 export function transformGuestStats(stats: {
@@ -144,6 +153,7 @@ export function transformGuestStats(stats: {
   declined_guests: number;
   pending_guests: number;
   invitations_sent: number;
+  total_gifts: number;
 }): GuestStatsResponse {
   return {
     total_guests: stats.total_guests,
@@ -153,6 +163,7 @@ export function transformGuestStats(stats: {
     declined_guests: stats.declined_guests,
     pending_guests: stats.pending_guests,
     invitations_sent: stats.invitations_sent,
+    total_gifts: stats.total_gifts,
   };
 }
 

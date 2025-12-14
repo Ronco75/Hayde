@@ -26,6 +26,7 @@ export interface Category {
     total_cost: string;
     amount_paid: string;
     remaining_amount: string;
+    expense_count?: number;
   }
 
   //Types for Groups
@@ -48,6 +49,7 @@ export interface Category {
     invitation_sent_at?: string | null;
     reminder_sent_at?: string | null;
     notes?: string | null;
+    gift_amount: number;
     created_at: string;
   }
   
@@ -60,6 +62,7 @@ export interface Category {
     declined_guests: number;
     pending_guests: number;
     invitations_sent: number;
+    total_gifts: number;
   }
 
   //Types for Import
@@ -181,6 +184,11 @@ export interface UpdateGuestDto {
 // For updating only RSVP status
 export interface UpdateRsvpDto {
   rsvp_status: RsvpStatus;
+}
+
+// For updating gift amount
+export interface UpdateGiftAmountDto {
+  gift_amount: number;
 }
 
 // ========================= Authentication & Wedding Types =========================
