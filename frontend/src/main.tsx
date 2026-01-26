@@ -3,6 +3,8 @@ import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.tsx'
 
+console.log('Main.tsx is running!');
+
 // Ensure RTL and dark mode class on mount
 document.documentElement.setAttribute('dir', 'rtl')
 document.documentElement.classList.add('dark')

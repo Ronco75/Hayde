@@ -4,8 +4,8 @@ import type { Group, Guest } from '../../types';
 import Modal from '../common/Modal';
 import GroupList from './GroupList';
 import GroupForm from './GroupForm';
-import Button from '../common/Button';
-import toast from 'react-hot-toast';
+import { Button } from '@/components/ui/button';
+import { toast } from 'react-hot-toast';
 
 interface ManageGroupsModalProps {
   isOpen: boolean;
@@ -45,7 +45,6 @@ function ManageGroupsModal({ isOpen, onClose, groups, guests, onGroupsChange }: 
       toast.success('קבוצה נוספה בהצלחה');
     } catch (err) {
       console.error('Error creating group:', err);
-      // Error toast handled by axios interceptor
     }
   };
 
@@ -59,7 +58,6 @@ function ManageGroupsModal({ isOpen, onClose, groups, guests, onGroupsChange }: 
       toast.success('קבוצה עודכנה בהצלחה');
     } catch (err) {
       console.error('Error updating group:', err);
-      // Error toast handled by axios interceptor
     }
   };
 
@@ -73,67 +71,54 @@ function ManageGroupsModal({ isOpen, onClose, groups, guests, onGroupsChange }: 
       toast.success('קבוצה נמחקה בהצלחה');
     } catch (err) {
       console.error('Error deleting group:', err);
-      // Error toast handled by axios interceptor
     }
   };
 
   return (
     <>
       {/* Main Manage Groups Modal */}
-      <Modal isOpen={isOpen} onClose={onClose}>
-        <div className="w-full">
-          <h2 className="text-2xl font-bold text-gray-100 mb-6">ניהול קבוצות</h2>
-          <div className="max-h-[60vh] overflow-y-auto overflow-x-hidden [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-            <GroupList
-              groups={groups}
-              guests={guests}
-              onEdit={handleEdit}
-              onDelete={handleDelete}
-              onAdd={handleAdd}
-            />
-          </div>
+      <Modal isOpen={isOpen} onClose={onClose} title="ניהול קבוצות">
+        {/* We might want to make the modal wider for this view if possible, but default width is okay */}
+        <div className="max-h-[70vh] overflow-y-auto pr-1">
+          <GroupList
+            groups={groups}
+            guests={guests}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+            onAdd={handleAdd}
+          />
         </div>
       </Modal>
 
       {/* Add Group Modal */}
-      <Modal isOpen={showAddModal} onClose={() => setShowAddModal(false)}>
-        <div>
-          <h2 className="text-2xl font-bold text-gray-100 mb-6">הוספת קבוצה חדשה</h2>
-          <GroupForm
-            onSubmit={handleConfirmAdd}
-            onCancel={() => setShowAddModal(false)}
-          />
-        </div>
+      <Modal isOpen={showAddModal} onClose={() => setShowAddModal(false)} title="הוספת קבוצה חדשה">
+        <GroupForm
+          onSubmit={handleConfirmAdd}
+          onCancel={() => setShowAddModal(false)}
+        />
       </Modal>
 
       {/* Edit Group Modal */}
-      <Modal isOpen={showEditModal} onClose={() => setShowEditModal(false)}>
-        <div>
-          <h2 className="text-2xl font-bold text-gray-100 mb-6">עריכת קבוצה</h2>
-          <GroupForm
-            initialValue={groupToEdit?.name || ''}
-            onSubmit={handleConfirmEdit}
-            onCancel={() => setShowEditModal(false)}
-          />
-        </div>
+      <Modal isOpen={showEditModal} onClose={() => setShowEditModal(false)} title="עריכת קבוצה">
+        <GroupForm
+          initialValue={groupToEdit?.name || ''}
+          onSubmit={handleConfirmEdit}
+          onCancel={() => setShowEditModal(false)}
+        />
       </Modal>
 
       {/* Delete Confirmation Modal */}
-      <Modal isOpen={showDeleteModal} onClose={() => setShowDeleteModal(false)}>
-        <div className="text-center">
-          <div className="text-6xl mb-4">🗑️</div>
-          <h2 className="text-2xl font-bold text-gray-100 mb-4">מחיקת קבוצה</h2>
-          <p className="text-gray-300 mb-8">
+      <Modal isOpen={showDeleteModal} onClose={() => setShowDeleteModal(false)} title="מחיקת קבוצה">
+        <div className="text-center space-y-4">
+          <p className="text-muted-foreground">
             האם אתה בטוח שברצונך למחוק את הקבוצה
-            {groupToDelete ? ` "${groupToDelete.name}" ` : ' '}?
-            <br />
-            <span className="font-semibold text-red-400">לא ניתן לשחזר את הפעולה הזו.</span>
+            {groupToDelete ? <span className="font-bold text-foreground mx-1">{groupToDelete.name}</span> : ' '}?
           </p>
-          <div className="flex gap-4 justify-center">
-            <Button variant="secondary" type="button" onClick={() => setShowDeleteModal(false)}>
+          <div className="flex gap-2 justify-end">
+            <Button variant="outline" onClick={() => setShowDeleteModal(false)}>
               ביטול
             </Button>
-            <Button variant="danger" type="button" onClick={handleConfirmDelete}>
+            <Button variant="destructive" onClick={handleConfirmDelete}>
               מחק
             </Button>
           </div>

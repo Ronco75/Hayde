@@ -1,9 +1,10 @@
 import { Router } from 'express';
-import { createWedding, getWedding, updateWedding, deleteWedding } from '../controllers/weddingController';
+import { createWedding, getWedding, updateWedding, deleteWedding, uploadWeddingInvitationImage, deleteWeddingInvitationImage } from '../controllers/weddingController';
 import { authenticate } from '../middleware/authMiddleware';
 import { validate } from '../middleware/validation';
 import { createWeddingSchema, updateWeddingSchema } from '../validators/schemas';
 import { asyncHandler } from '../middleware/errorHandler';
+import { uploadInvitationImage } from '../middleware/uploadMiddleware';
 
 const router = Router();
 
@@ -36,5 +37,18 @@ router.put('/', validate(updateWeddingSchema), asyncHandler(updateWedding));
  * WARNING: This will cascade delete all related data
  */
 router.delete('/', asyncHandler(deleteWedding));
+
+/**
+ * POST /api/weddings/invitation-image
+ * Upload invitation image for the wedding
+ * Body: multipart/form-data with 'image' field
+ */
+router.post('/invitation-image', uploadInvitationImage, asyncHandler(uploadWeddingInvitationImage));
+
+/**
+ * DELETE /api/weddings/invitation-image
+ * Delete the invitation image from the wedding
+ */
+router.delete('/invitation-image', asyncHandler(deleteWeddingInvitationImage));
 
 export default router;

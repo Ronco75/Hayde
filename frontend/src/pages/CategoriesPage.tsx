@@ -1,40 +1,41 @@
-/**
- * CategoriesPage - Modern categories management page
- * Grid layout with FAB-style add button and animated cards
- */
-
 import { useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
 import { categoriesApi, expensesApi } from '../services/api';
 import type { Category, CategoryTotals } from '../types';
 import { formatNis } from '../utils/format';
-import { slideUp, staggerContainer, staggerItem, fadeIn } from '../utils/motion';
-import Loading from '../components/common/Loading';
-import Header from '../components/common/Header';
-import CategoryCard from '../components/categories/CategoryCard';
-import Button from '../components/common/Button';
-import Modal from '../components/common/Modal';
-import Input from '../components/common/Input';
-import EmptyState from '../components/common/EmptyState';
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import Modal from '../components/common/Modal'; // Keeping legacy Modal for now or should I make a Dialog? Let's use legacy modal but style content
 import {
   Plus,
   Wallet,
   CheckCircle,
   AlertCircle,
   FolderOpen,
-  TrendingUp,
+  ArrowRight,
+  Pencil,
+  Trash2
 } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { Link } from 'react-router-dom';
 
 function CategoriesPage() {
   const [categories, setCategories] = useState<Category[]>([]);
-  const [newCategoryName, setNewCategoryName] = useState('');
-  const [loading, setLoading] = useState(true);
   const [totalsByCategoryId, setTotalsByCategoryId] = useState<Record<number, CategoryTotals>>({});
   const [overallTotals, setOverallTotals] = useState({ total_cost: 0, amount_paid: 0, remaining: 0 });
-  const [showAddModal, setShowAddModal] = useState(false);
+  const [loading, setLoading] = useState(true);
 
-  // Fetch categories on component mount
+  // Modals state
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [newCategoryName, setNewCategoryName] = useState('');
+
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [categoryToEdit, setCategoryToEdit] = useState<Category | null>(null);
+  const [editName, setEditName] = useState('');
+
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [categoryToDelete, setCategoryToDelete] = useState<Category | null>(null);
+
   useEffect(() => {
     loadCategories();
   }, []);
@@ -46,20 +47,24 @@ function CategoriesPage() {
         expensesApi.getTotals(),
       ]);
       setCategories(categoriesResponse.data);
+
       const totalsMap: Record<number, CategoryTotals> = {};
       let sum = { total_cost: 0, amount_paid: 0, remaining: 0 };
+
       totalsResponse.data.forEach((row) => {
         totalsMap[row.category_id] = row;
-        const total = parseFloat(row.total_cost);
-        const paid = parseFloat(row.amount_paid);
-        sum.total_cost += isNaN(total) ? 0 : total;
-        sum.amount_paid += isNaN(paid) ? 0 : paid;
+        const total = parseFloat(row.total_cost || '0');
+        const paid = parseFloat(row.amount_paid || '0');
+        sum.total_cost += total;
+        sum.amount_paid += paid;
       });
       sum.remaining = sum.total_cost - sum.amount_paid;
+
       setTotalsByCategoryId(totalsMap);
       setOverallTotals(sum);
     } catch (error) {
       console.error('Error loading categories:', error);
+      toast.error('שגיאה בטעינת נתונים');
     } finally {
       setLoading(false);
     }
@@ -73,19 +78,13 @@ function CategoriesPage() {
       await categoriesApi.create(newCategoryName);
       setNewCategoryName('');
       setShowAddModal(false);
-      loadCategories(); // Reload the list
+      loadCategories();
+      toast.success('קטגוריה נוצרה בהצלחה');
     } catch (err) {
       console.error('Error creating category:', err);
-      toast.error('שגיאה ביצירת הקטגוריה, אנא נסה שנית.');
+      toast.error('שגיאה ביצירת קטגוריה');
     }
   };
-
-  // Category modals state
-  const [showEditModal, setShowEditModal] = useState(false);
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [categoryToEdit, setCategoryToEdit] = useState<Category | null>(null);
-  const [categoryToDelete, setCategoryToDelete] = useState<Category | null>(null);
-  const [editName, setEditName] = useState('');
 
   const handleEdit = (category: Category) => {
     setCategoryToEdit(category);
@@ -93,26 +92,24 @@ function CategoriesPage() {
     setShowEditModal(true);
   };
 
-  const handleDelete = (categoryId: number) => {
-    const category = categories.find((c) => c.id === categoryId) || null;
-    setCategoryToDelete(category);
-    setShowDeleteModal(true);
-  };
-
   const handleConfirmEdit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!categoryToEdit) return;
-    const name = editName.trim();
-    if (!name) return;
+    if (!categoryToEdit || !editName.trim()) return;
+
     try {
-      await categoriesApi.update(categoryToEdit.id, name);
+      await categoriesApi.update(categoryToEdit.id, editName);
       setShowEditModal(false);
       setCategoryToEdit(null);
-      setEditName('');
-      await loadCategories();
+      loadCategories();
+      toast.success('הקטגוריה עודכנה');
     } catch (error) {
-      console.error('Error updating category:', error);
+      toast.error('שגיאה בעדכון הקטגוריה');
     }
+  };
+
+  const handleDelete = (category: Category) => {
+    setCategoryToDelete(category);
+    setShowDeleteModal(true);
   };
 
   const handleConfirmDelete = async () => {
@@ -121,308 +118,175 @@ function CategoriesPage() {
       await categoriesApi.delete(categoryToDelete.id);
       setShowDeleteModal(false);
       setCategoryToDelete(null);
-      await loadCategories();
+      loadCategories();
+      toast.success('הקטגוריה נמחקה');
     } catch (error) {
-      console.error('Error deleting category:', error);
+      toast.error('שגיאה במחיקת הקטגוריה');
     }
   };
 
   if (loading) {
-    return <Loading />;
+    return <div className="p-8">טוען קטגוריות...</div>;
   }
 
-  const paidPercentage =
-    overallTotals.total_cost > 0
-      ? ((overallTotals.amount_paid / overallTotals.total_cost) * 100).toFixed(0)
-      : '0';
-
   return (
-    <>
-      <div className="min-h-screen bg-background-primary">
-        {/* Decorative Background */}
-        <div className="fixed inset-0 bg-gradient-mesh opacity-20" />
-        <div className="fixed inset-0 bg-gradient-to-br from-gold-900/10 via-background-primary to-background-primary" />
-
-        {/* Content */}
-        <div className="relative z-10">
-          <Header title="הוצאות" />
-
-          <motion.div
-            className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8"
-            variants={slideUp}
-            initial="hidden"
-            animate="visible"
-          >
-            {/* Overall Totals Summary */}
-            <motion.div
-              className="bg-surface-primary border border-border-subtle rounded-2xl shadow-xl p-6 mb-8"
-              variants={fadeIn}
-            >
-              <h2 className="text-xl font-display font-bold text-gray-50 mb-6 flex items-center gap-2">
-                <Wallet className="w-6 h-6 text-gold-400" />
-                סיכום כולל
-              </h2>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                {/* Total Cost */}
-                <motion.div
-                  className="bg-primary-500/10 border border-primary-500/20 rounded-xl p-5"
-                  whileHover={{ scale: 1.02, y: -2 }}
-                  transition={{ duration: 0.2 }}
-                >
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="text-gray-400 text-sm font-medium">סה"כ עלות</span>
-                    <Wallet className="w-5 h-5 text-primary-400" />
-                  </div>
-                  <div className="text-primary-400 font-numeric font-bold text-3xl">
-                    {formatNis(overallTotals.total_cost)}
-                  </div>
-                </motion.div>
-
-                {/* Amount Paid */}
-                <motion.div
-                  className="bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-5"
-                  whileHover={{ scale: 1.02, y: -2 }}
-                  transition={{ duration: 0.2 }}
-                >
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="text-emerald-400 text-sm font-medium">שולם</span>
-                    <CheckCircle className="w-5 h-5 text-emerald-400" />
-                  </div>
-                  <div className="text-emerald-400 font-numeric font-bold text-3xl">
-                    {formatNis(overallTotals.amount_paid)}
-                  </div>
-                  <div className="mt-2 flex items-center gap-1 text-emerald-400 text-xs font-semibold">
-                    <TrendingUp className="w-3 h-3" />
-                    {paidPercentage}% מהתקציב
-                  </div>
-                </motion.div>
-
-                {/* Remaining */}
-                <motion.div
-                  className="bg-rose-500/10 border border-rose-500/20 rounded-xl p-5"
-                  whileHover={{ scale: 1.02, y: -2 }}
-                  transition={{ duration: 0.2 }}
-                >
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="text-rose-400 text-sm font-medium">נשאר לתשלום</span>
-                    <AlertCircle className="w-5 h-5 text-rose-400" />
-                  </div>
-                  <div className="text-rose-400 font-numeric font-bold text-3xl">
-                    {formatNis(overallTotals.remaining)}
-                  </div>
-                </motion.div>
-              </div>
-            </motion.div>
-
-            {/* Categories Grid */}
-            {categories.length === 0 ? (
-              <motion.div variants={fadeIn}>
-                <EmptyState
-                  icon={FolderOpen}
-                  title="אין קטגוריות עדיין"
-                  description="התחל על ידי הוספת הקטגוריה הראשונה שלך"
-                  action={
-                    <Button
-                      variant="gold"
-                      size="lg"
-                      onClick={() => setShowAddModal(true)}
-                      leftIcon={<Plus className="w-5 h-5" />}
-                    >
-                      הוסף קטגוריה ראשונה
-                    </Button>
-                  }
-                />
-              </motion.div>
-            ) : (
-              <motion.div
-                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
-                variants={staggerContainer}
-                initial="hidden"
-                animate="visible"
-              >
-                {categories.map((category) => (
-                  <motion.div key={category.id} variants={staggerItem}>
-                    <CategoryCard
-                      category={category}
-                      totals={totalsByCategoryId[category.id]}
-                      onEdit={handleEdit}
-                      onDelete={handleDelete}
-                    />
-                  </motion.div>
-                ))}
-              </motion.div>
-            )}
-          </motion.div>
-        </div>
-
-        {/* Floating Action Button (FAB) */}
-        {categories.length > 0 && (
-          <motion.div
-            className="fixed bottom-8 left-8 z-20"
-            initial={{ scale: 0, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ delay: 0.5, type: 'spring', stiffness: 200 }}
-          >
-            <motion.button
-              onClick={() => setShowAddModal(true)}
-              className="
-                w-16 h-16
-                bg-gradient-to-br from-gold-500 to-gold-600
-                text-white
-                rounded-full
-                shadow-glow-gold
-                hover:shadow-2xl
-                flex items-center justify-center
-                focus:outline-none focus:ring-4 focus:ring-gold-500/50
-                transition-all duration-200
-              "
-              whileHover={{ scale: 1.1, rotate: 90 }}
-              whileTap={{ scale: 0.9 }}
-            >
-              <Plus className="w-8 h-8" />
-            </motion.button>
-          </motion.div>
-        )}
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h1 className="text-3xl font-bold tracking-tight">ניהול הוצאות</h1>
+        <Button onClick={() => setShowAddModal(true)}>
+          <Plus className="ml-2 h-4 w-4" />
+          הוסף קטגוריה
+        </Button>
       </div>
 
-      {/* Add Category Modal */}
-      <Modal
-        isOpen={showAddModal}
-        onClose={() => {
-          setShowAddModal(false);
-          setNewCategoryName('');
-        }}
-        title="הוסף קטגוריה חדשה"
-      >
-        <form onSubmit={handleCreateCategory} className="space-y-6">
-          <Input
-            type="text"
-            name="category_name"
-            label="שם הקטגוריה"
-            value={newCategoryName}
-            onChange={(e) => setNewCategoryName(e.target.value)}
-            leftIcon={<FolderOpen className="w-5 h-5" />}
-            placeholder="למשל: אולם, צלם, קייטרינג..."
-            required
-            fullWidth
-            autoFocus
-          />
+      {/* Summary Cards */}
+      <div className="grid gap-4 md:grid-cols-3">
+        <Card className="bg-primary/5 border-primary/20">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-primary">תקציב כולל</CardTitle>
+            <Wallet className="h-4 w-4 text-primary" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-primary">{formatNis(overallTotals.total_cost)}</div>
+          </CardContent>
+        </Card>
+        <Card className="bg-green-500/5 border-green-500/20">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-green-600">שולם</CardTitle>
+            <CheckCircle className="h-4 w-4 text-green-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-green-600">{formatNis(overallTotals.amount_paid)}</div>
+          </CardContent>
+        </Card>
+        <Card className="bg-red-500/5 border-red-500/20">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-red-600">נותר לתשלום</CardTitle>
+            <AlertCircle className="h-4 w-4 text-red-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-red-600">{formatNis(overallTotals.remaining)}</div>
+          </CardContent>
+        </Card>
+      </div>
 
-          <div className="flex gap-3 justify-end">
-            <Button
-              variant="secondary"
-              type="button"
-              onClick={() => {
-                setShowAddModal(false);
-                setNewCategoryName('');
-              }}
-            >
-              ביטול
-            </Button>
-            <Button
-              variant="gold"
-              type="submit"
-              leftIcon={<Plus className="w-5 h-5" />}
-            >
-              הוסף קטגוריה
-            </Button>
+      {/* Categories Grid */}
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        {categories.map((category) => {
+          const stats = totalsByCategoryId[category.id] || { total_cost: '0', amount_paid: '0', remaining_amount: '0' };
+          const total = parseFloat(stats.total_cost || '0');
+          const paid = parseFloat(stats.amount_paid || '0');
+          const progress = total > 0 ? (paid / total) * 100 : 0;
+
+          return (
+            <Card key={category.id} className="group relative overflow-hidden transition-all hover:shadow-lg">
+              <CardHeader className="pb-2">
+                <div className="flex justify-between items-start">
+                  <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center mb-2">
+                    <FolderOpen className="h-5 w-5 text-primary" />
+                  </div>
+                  <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleEdit(category)}>
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                    <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => handleDelete(category)}>
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+                <CardTitle className="text-xl">{category.name}</CardTitle>
+              </CardHeader>
+              <CardContent className="pb-2">
+                <div className="space-y-1">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">תקציב</span>
+                    <span className="font-medium">{formatNis(total)}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">שולם</span>
+                    <span className="font-medium text-green-600">{formatNis(paid)}</span>
+                  </div>
+                  {/* Progress Bar */}
+                  <div className="mt-3 h-2 w-full bg-secondary rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-primary transition-all duration-500"
+                      style={{ width: `${progress}%` }}
+                    />
+                  </div>
+                </div>
+              </CardContent>
+              <CardFooter className="pt-4">
+                <Link to={`/categories/${category.id}/expenses`} className="w-full">
+                  <Button variant="outline" className="w-full group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
+                    לפרטים והוספת הוצאות
+                    <ArrowRight className="mr-2 h-4 w-4" />
+                  </Button>
+                </Link>
+              </CardFooter>
+            </Card>
+          );
+        })}
+
+        {/* Add New Category Card (Empty State-ish) */}
+        <button
+          onClick={() => setShowAddModal(true)}
+          className="flex flex-col items-center justify-center h-full min-h-[200px] border-2 border-dashed rounded-xl border-muted-foreground/25 hover:border-primary/50 hover:bg-muted/50 transition-all group"
+        >
+          <div className="h-12 w-12 rounded-full bg-muted flex items-center justify-center mb-3 group-hover:bg-primary/10 transition-colors">
+            <Plus className="h-6 w-6 text-muted-foreground group-hover:text-primary" />
+          </div>
+          <span className="font-medium text-muted-foreground group-hover:text-foreground">הוסף קטגוריה חדשה</span>
+        </button>
+      </div>
+
+      {/* Modals - Keeping them simple for now */}
+      <Modal isOpen={showAddModal} onClose={() => setShowAddModal(false)} title="הוסף קטגוריה חדשה">
+        <form onSubmit={handleCreateCategory} className="space-y-4">
+          <div className="space-y-2">
+            <label className="text-sm font-medium">שם הקטגוריה</label>
+            <Input
+              value={newCategoryName}
+              onChange={(e) => setNewCategoryName(e.target.value)}
+              placeholder="למשל: צילום, בר, אולם"
+              autoFocus
+            />
+          </div>
+          <div className="flex justify-end gap-2 pt-4">
+            <Button type="button" variant="ghost" onClick={() => setShowAddModal(false)}>ביטול</Button>
+            <Button type="submit">שמור</Button>
           </div>
         </form>
       </Modal>
 
-      {/* Edit Category Modal */}
-      <Modal
-        isOpen={showEditModal}
-        onClose={() => {
-          setShowEditModal(false);
-          setCategoryToEdit(null);
-          setEditName('');
-        }}
-        title="עריכת קטגוריה"
-      >
-        <form onSubmit={handleConfirmEdit} className="space-y-6">
-          <Input
-            type="text"
-            name="category_name"
-            label="שם הקטגוריה"
-            value={editName}
-            onChange={(e) => setEditName(e.target.value)}
-            leftIcon={<FolderOpen className="w-5 h-5" />}
-            placeholder="שם חדש"
-            required
-            fullWidth
-            autoFocus
-          />
-
-          <div className="flex gap-3 justify-end">
-            <Button
-              variant="secondary"
-              type="button"
-              onClick={() => {
-                setShowEditModal(false);
-                setCategoryToEdit(null);
-                setEditName('');
-              }}
-            >
-              ביטול
-            </Button>
-            <Button variant="primary" type="submit">
-              שמור
-            </Button>
+      <Modal isOpen={showEditModal} onClose={() => setShowEditModal(false)} title="ערוך קטגוריה">
+        <form onSubmit={handleConfirmEdit} className="space-y-4">
+          <div className="space-y-2">
+            <label className="text-sm font-medium">שם הקטגוריה</label>
+            <Input
+              value={editName}
+              onChange={(e) => setEditName(e.target.value)}
+              autoFocus
+            />
+          </div>
+          <div className="flex justify-end gap-2 pt-4">
+            <Button type="button" variant="ghost" onClick={() => setShowEditModal(false)}>ביטול</Button>
+            <Button type="submit">שמור שינויים</Button>
           </div>
         </form>
       </Modal>
 
-      {/* Delete Category Confirmation Modal */}
-      <Modal
-        isOpen={showDeleteModal}
-        onClose={() => {
-          setShowDeleteModal(false);
-          setCategoryToDelete(null);
-        }}
-        title="מחיקת קטגוריה"
-      >
-        <div className="text-center space-y-6">
-          <motion.div
-            className="mx-auto w-20 h-20 bg-rose-500/20 rounded-full flex items-center justify-center"
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            transition={{ type: 'spring', stiffness: 200 }}
-          >
-            <AlertCircle className="w-10 h-10 text-rose-400" />
-          </motion.div>
-
-          <div>
-            <p className="text-gray-300 mb-2">
-              האם אתה בטוח שברצונך למחוק את הקטגוריה
-            </p>
-            {categoryToDelete && (
-              <p className="text-primary-400 font-display font-semibold text-xl">
-                "{categoryToDelete.name}"
-              </p>
-            )}
-            <p className="text-rose-400 font-semibold text-sm mt-4">
-              לא ניתן לשחזר את הפעולה הזו.
-            </p>
-          </div>
-
-          <div className="flex gap-3 justify-center">
-            <Button
-              variant="secondary"
-              onClick={() => {
-                setShowDeleteModal(false);
-                setCategoryToDelete(null);
-              }}
-            >
-              ביטול
-            </Button>
-            <Button variant="danger" onClick={handleConfirmDelete}>
-              מחק
-            </Button>
+      <Modal isOpen={showDeleteModal} onClose={() => setShowDeleteModal(false)} title="מחיקת קטגוריה">
+        <div className="space-y-4 text-center">
+          <AlertCircle className="w-12 h-12 text-destructive mx-auto" />
+          <p>האם אתה בטוח שברצונך למחוק את הקטגוריה <strong>{categoryToDelete?.name}</strong>?</p>
+          <p className="text-sm text-muted-foreground">פעולה זו לא ניתנת לביטול.</p>
+          <div className="flex justify-end gap-2 pt-4">
+            <Button type="button" variant="outline" onClick={() => setShowDeleteModal(false)}>ביטול</Button>
+            <Button type="button" variant="destructive" onClick={handleConfirmDelete}>מחק קטגוריה</Button>
           </div>
         </div>
       </Modal>
-    </>
+    </div>
   );
 }
 

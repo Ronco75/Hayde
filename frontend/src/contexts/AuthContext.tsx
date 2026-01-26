@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
-import type { User, Wedding, LoginDto, RegisterDto, AuthResponse, ForgotPasswordDto, ResetPasswordDto } from '../types';
+import type { User, Wedding, LoginDto, RegisterDto, AuthResponse } from '../types';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import { authApi } from '../services/api';

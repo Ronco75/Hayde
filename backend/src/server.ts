@@ -1,5 +1,6 @@
 import express from 'express';
 import cors from 'cors';
+import path from 'path';
 import prisma from './config/db';
 import categoryRoutes from './routes/categoryRoutes';
 import expensesRoutes from './routes/expensesRoutes';
@@ -9,6 +10,7 @@ import importRoutes from './routes/importRoutes';
 import weddingRoutes from './routes/weddingRoute';
 import { errorHandler } from './middleware/errorHandler';
 import authRoutes from './routes/authRoute';
+import { getUploadsPath } from './middleware/uploadMiddleware';
 
 const app = express();
 const port = 3000;
@@ -16,6 +18,9 @@ const port = 3000;
 // Middleware
 app.use(express.json());
 app.use(cors());
+
+// Serve static files from uploads directory
+app.use('/uploads', express.static(getUploadsPath()));
 
 // routes
 app.use('/api/categories', categoryRoutes);

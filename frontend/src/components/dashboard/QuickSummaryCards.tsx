@@ -10,7 +10,6 @@ import type { GuestStats, CategoryTotals } from '../../types';
 import { formatNis } from '../../utils/format';
 import { staggerContainer, staggerItem, scaleIn } from '../../utils/motion';
 import {
-  DollarSign,
   CheckCircle,
   AlertCircle,
   Users,

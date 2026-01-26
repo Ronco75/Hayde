@@ -191,6 +191,31 @@ export interface UpdateGiftAmountDto {
   gift_amount: number;
 }
 
+// ============ Bulk Guest DTOs ============
+// For bulk deleting guests
+export interface BulkDeleteGuestsDto {
+  ids: number[];
+}
+
+// For bulk updating RSVP status
+export interface BulkUpdateRsvpDto {
+  ids: number[];
+  rsvp_status: RsvpStatus;
+}
+
+// For bulk updating group
+export interface BulkUpdateGroupDto {
+  ids: number[];
+  group_id: number;
+}
+
+// Bulk operation response
+export interface BulkOperationResponse {
+  deleted?: number;
+  updated?: number;
+  message: string;
+}
+
 // ========================= Authentication & Wedding Types =========================
 // User (authenticated user)
 export interface User {
@@ -209,6 +234,7 @@ export interface Wedding {
   venue?: string | null;
   address?: string | null;
   budget?: number | null;
+  invitation_image_url?: string | null;
   created_at: string;
 }
 
@@ -269,4 +295,11 @@ export interface UpdateWeddingDto {
   venue?: string;
   address?: string;
   budget?: number;
+}
+
+// Image upload response
+export interface ImageUploadResponse {
+  message: string;
+  imageUrl: string;
+  wedding: Wedding;
 }

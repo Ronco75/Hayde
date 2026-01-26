@@ -178,6 +178,7 @@ export interface WeddingResponse {
   venue: string | null;
   address: string | null;
   budget: number | null;
+  invitation_image_url: string | null;
   created_at: string;
 }
 
@@ -195,6 +196,7 @@ export function transformWedding(wedding: PrismaWedding): WeddingResponse {
     venue: wedding.venue,
     address: wedding.address,
     budget: budget,
+    invitation_image_url: wedding.invitationImageUrl,
     created_at: wedding.createdAt.toISOString(),
   };
 }

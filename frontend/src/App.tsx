@@ -1,13 +1,14 @@
 /**
- * App - Main application component with animated route transitions
- * Includes AuthProvider, Toast notifications, and AnimatePresence for page transitions
+ * App - Main application component
+ * Integrated with ThemeProvider and DashboardLayout
  */
 
-import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
-import { AnimatePresence } from 'framer-motion';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from './contexts/AuthContext';
+import { ThemeProvider } from './components/theme-provider';
 import ProtectedRoute from './components/auth/ProtectedRoute';
+import DashboardLayout from './components/layout/DashboardLayout';
 
 // Public Pages
 import HomePage from './pages/HomePage';
@@ -24,78 +25,48 @@ import ExpensesPage from './pages/ExpensesPage';
 import GuestsPage from './pages/GuestsPage';
 import NotFoundPage from './pages/NotFoundPage';
 
-// Animated Routes Component
-function AnimatedRoutes() {
-  const location = useLocation();
-
-  return (
-    <AnimatePresence mode="wait">
-      <Routes location={location} key={location.pathname}>
-        {/* Public Routes */}
-        <Route path="/" element={<HomePage />} />
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/register" element={<RegisterPage />} />
-        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-        <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
-
-        {/* Protected Routes - require authentication */}
-        <Route element={<ProtectedRoute />}>
-          <Route path="/wedding-setup" element={<WeddingSetupPage />} />
-          <Route path="/dashboard" element={<DashboardPage />} />
-          <Route path="/categories" element={<CategoriesPage />} />
-          <Route path="/categories/:categoryId/expenses" element={<ExpensesPage />} />
-          <Route path="/guests" element={<GuestsPage />} />
-        </Route>
-
-        {/* 404 Catch-all route - must be last */}
-        <Route path="*" element={<NotFoundPage />} />
-      </Routes>
-    </AnimatePresence>
-  );
-}
-
 function App() {
   return (
-    <>
-      {/* Toast notification container - displays all toast messages */}
+    <ThemeProvider defaultTheme="system" storageKey="hayde-ui-theme">
       <Toaster
         position="top-center"
         reverseOrder={false}
-        gutter={8}
         toastOptions={{
-          // Default options for all toasts
-          duration: 4000,
           style: {
-            background: '#16161D',
-            color: '#fff',
-            border: '1px solid rgba(168, 85, 247, 0.2)',
-            borderRadius: '12px',
-            fontFamily: '"DM Sans", "Rubik", sans-serif',
-          },
-          // Specific options by type
-          success: {
-            duration: 3000,
-            iconTheme: {
-              primary: '#10b981',
-              secondary: '#fff',
-            },
-          },
-          error: {
-            duration: 5000,
-            iconTheme: {
-              primary: '#ef4444',
-              secondary: '#fff',
-            },
+            background: 'hsl(var(--card))',
+            color: 'hsl(var(--card-foreground))',
+            border: '1px solid hsl(var(--border))',
           },
         }}
       />
 
       <AuthProvider>
         <Router>
-          <AnimatedRoutes />
+          <Routes>
+            {/* Public Routes */}
+            <Route path="/" element={<HomePage />} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/register" element={<RegisterPage />} />
+            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+            <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
+
+            {/* Protected Routes - require authentication */}
+            <Route element={<ProtectedRoute />}>
+              <Route element={<DashboardLayout />}>
+                <Route path="/wedding-setup" element={<WeddingSetupPage />} />
+                <Route path="/dashboard" element={<DashboardPage />} />
+                <Route path="/categories" element={<CategoriesPage />} />
+                <Route path="/categories/:categoryId/expenses" element={<ExpensesPage />} />
+                <Route path="/guests" element={<GuestsPage />} />
+              </Route>
+            </Route>
+
+            {/* 404 Catch-all route */}
+            <Route path="*" element={<NotFoundPage />} />
+          </Routes>
         </Router>
       </AuthProvider>
-    </>
+    </ThemeProvider>
   );
 }
 

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import type { Guest, Group, RsvpStatus, CreateGuestDto, UpdateGuestDto } from '../../types';
-import Button from '../common/Button';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { normalizePhone } from '../../utils/format';
 
 interface GuestFormProps {
@@ -55,126 +56,88 @@ function GuestForm({ onSubmit, initialValue, groups, onCancel, onCreateGroup }: 
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-3">
+    <form onSubmit={handleSubmit} className="space-y-4">
       {/* Name */}
-      <div>
-        <label className="block text-sm font-semibold text-gray-300 mb-1.5">
+      <div className="space-y-2">
+        <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
           שם המוזמן *
         </label>
-        <input 
-          type="text" 
-          value={formData.name} 
-          onChange={(e) => setFormData({ ...formData, name: e.target.value })} 
-          placeholder="שם מלא" 
-          className="
-            w-full px-4 py-3 text-base rounded-lg
-            bg-slate-800 text-gray-100 placeholder:text-gray-400
-            border border-white/10 focus:outline-none focus:ring-4
-            focus:ring-primary-300 focus:border-primary-600 
-            transition-all duration-200
-          " 
-          required 
+        <Input
+          type="text"
+          value={formData.name}
+          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+          placeholder="שם מלא"
+          required
+          autoFocus
         />
       </div>
 
       {/* Phone Number */}
-      <div>
-        <label className="block text-sm font-semibold text-gray-300 mb-1.5">
+      <div className="space-y-2">
+        <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
           מספר טלפון *
         </label>
-        <input 
-          type="tel" 
-          value={formData.phone_number} 
-          onChange={(e) => setFormData({ ...formData, phone_number: e.target.value })} 
-          placeholder="050-1234567" 
-          className="
-            w-full px-4 py-3 text-base rounded-lg
-            bg-slate-800 text-gray-100 placeholder:text-gray-400
-            border border-white/10 focus:outline-none focus:ring-4
-            focus:ring-primary-300 focus:border-primary-600 
-            transition-all duration-200
-          " 
-          required 
+        <Input
+          type="tel"
+          value={formData.phone_number}
+          onChange={(e) => setFormData({ ...formData, phone_number: e.target.value })}
+          placeholder="050-1234567"
+          required
         />
       </div>
 
       {/* Group */}
-      <div>
-        <div className="flex justify-between items-center mb-1.5">
-          <label className="block text-sm font-semibold text-gray-300">
+      <div className="space-y-2">
+        <div className="flex justify-between items-center">
+          <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
             קבוצה *
           </label>
           {onCreateGroup && !showNewGroupInput && (
-            <button
+            <Button
               type="button"
+              variant="link"
+              size="sm"
               onClick={() => setShowNewGroupInput(true)}
-              className="text-xs text-primary-400 hover:text-primary-300 font-semibold transition-colors"
+              className="h-auto p-0 text-xs"
             >
               + קבוצה חדשה
-            </button>
+            </Button>
           )}
         </div>
 
         {showNewGroupInput ? (
-          <div className="space-y-2">
-            <div className="flex gap-2">
-              <input
-                type="text"
-                value={newGroupName}
-                onChange={(e) => setNewGroupName(e.target.value)}
-                placeholder="שם הקבוצה החדשה..."
-                className="
-                  flex-1 px-4 py-3 text-base rounded-lg
-                  bg-slate-800 text-gray-100 placeholder:text-gray-400
-                  border border-white/10 focus:outline-none focus:ring-4
-                  focus:ring-primary-300 focus:border-primary-600
-                  transition-all duration-200
-                "
-                disabled={isCreatingGroup}
-                autoFocus
-              />
-              <button
-                type="button"
-                onClick={handleCreateGroup}
-                disabled={!newGroupName.trim() || isCreatingGroup}
-                className="
-                  px-4 py-3 rounded-lg font-semibold text-sm
-                  bg-primary-600 text-white
-                  hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed
-                  transition-all duration-200
-                "
-              >
-                {isCreatingGroup ? '...' : 'צור'}
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setShowNewGroupInput(false);
-                  setNewGroupName('');
-                }}
-                disabled={isCreatingGroup}
-                className="
-                  px-4 py-3 rounded-lg font-semibold text-sm
-                  bg-slate-700 text-gray-300
-                  hover:bg-slate-600 disabled:opacity-50 disabled:cursor-not-allowed
-                  transition-all duration-200
-                "
-              >
-                ביטול
-              </button>
-            </div>
+          <div className="flex gap-2">
+            <Input
+              value={newGroupName}
+              onChange={(e) => setNewGroupName(e.target.value)}
+              placeholder="שם הקבוצה החדשה..."
+              disabled={isCreatingGroup}
+              autoFocus
+            />
+            <Button
+              type="button"
+              onClick={handleCreateGroup}
+              disabled={!newGroupName.trim() || isCreatingGroup}
+            >
+              צור
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => {
+                setShowNewGroupInput(false);
+                setNewGroupName('');
+              }}
+              disabled={isCreatingGroup}
+            >
+              ביטול
+            </Button>
           </div>
         ) : (
           <select
             value={formData.group_id}
             onChange={(e) => setFormData({ ...formData, group_id: parseInt(e.target.value) })}
-            className="
-              w-full px-4 py-3 text-base rounded-lg
-              bg-slate-800 text-gray-100
-              border border-white/10 focus:outline-none focus:ring-4
-              focus:ring-primary-300 focus:border-primary-600
-              transition-all duration-200
-            "
+            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
             required
           >
             {groups.map((group) => (
@@ -187,40 +150,27 @@ function GuestForm({ onSubmit, initialValue, groups, onCancel, onCreateGroup }: 
       </div>
 
       {/* Number of Guests */}
-      <div>
-        <label className="block text-sm font-semibold text-gray-300 mb-1.5">
+      <div className="space-y-2">
+        <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
           מספר משתתפים
         </label>
-        <input 
-          type="number" 
-          value={formData.number_of_guests} 
-          onChange={(e) => setFormData({ ...formData, number_of_guests: parseInt(e.target.value) || 1 })} 
+        <Input
+          type="number"
+          value={formData.number_of_guests}
+          onChange={(e) => setFormData({ ...formData, number_of_guests: parseInt(e.target.value) || 1 })}
           min="1"
-          className="
-            w-full px-4 py-3 text-base rounded-lg
-            bg-slate-800 text-gray-100
-            border border-white/10 focus:outline-none focus:ring-4
-            focus:ring-primary-300 focus:border-primary-600 
-            transition-all duration-200
-          " 
         />
       </div>
 
       {/* RSVP Status */}
-      <div>
-        <label className="block text-sm font-semibold text-gray-300 mb-1.5">
+      <div className="space-y-2">
+        <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
           סטטוס אישור
         </label>
-        <select 
-          value={formData.rsvp_status} 
-          onChange={(e) => setFormData({ ...formData, rsvp_status: e.target.value as RsvpStatus })} 
-          className="
-            w-full px-4 py-3 text-base rounded-lg
-            bg-slate-800 text-gray-100
-            border border-white/10 focus:outline-none focus:ring-4
-            focus:ring-primary-300 focus:border-primary-600 
-            transition-all duration-200
-          "
+        <select
+          value={formData.rsvp_status}
+          onChange={(e) => setFormData({ ...formData, rsvp_status: e.target.value as RsvpStatus })}
+          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
         >
           <option value="pending">ממתין לתשובה</option>
           <option value="confirmed">אישר הגעה</option>
@@ -230,29 +180,23 @@ function GuestForm({ onSubmit, initialValue, groups, onCancel, onCreateGroup }: 
       </div>
 
       {/* Notes */}
-      <div>
-        <label className="block text-sm font-semibold text-gray-300 mb-1.5">
+      <div className="space-y-2">
+        <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
           הערות
         </label>
-        <textarea 
-          value={formData.notes} 
-          onChange={(e) => setFormData({ ...formData, notes: e.target.value })} 
-          placeholder="הערות נוספות..." 
-          rows={2}
-          className="
-            w-full px-4 py-3 text-base rounded-lg
-            bg-slate-800 text-gray-100 placeholder:text-gray-400
-            border border-white/10 focus:outline-none focus:ring-4
-            focus:ring-primary-300 focus:border-primary-600
-            transition-all duration-200
-          "
+        <textarea
+          value={formData.notes}
+          onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+          placeholder="הערות נוספות..."
+          rows={3}
+          className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
         />
       </div>
 
       {/* Action Buttons */}
-      <div className="flex justify-end gap-3 pt-1">
+      <div className="flex justify-end gap-3 pt-4">
         {onCancel && (
-          <Button type="button" variant="secondary" onClick={onCancel}>
+          <Button type="button" variant="outline" onClick={onCancel}>
             ביטול
           </Button>
         )}

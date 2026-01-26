@@ -1,7 +1,13 @@
 import type { Group } from '../../types';
 import { Pencil, Trash2, Users } from 'lucide-react';
-import Button from '../common/Button';
-import Tooltip from '../common/Tooltip';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from "@/components/ui/tooltip"
 
 interface GroupCardProps {
     group: Group;
@@ -12,52 +18,48 @@ interface GroupCardProps {
 
 function GroupCard({ group, guestCount, onEdit, onDelete }: GroupCardProps) {
     return (
-        <div className="
-        bg-slate-900
-        text-gray-100
-        rounded-lg
-        shadow-elev-2
-        hover:shadow-elev-3
-        p-6
-        transition-all
-        duration-300
-        border
-        border-white/10
-        relative
-        flex
-        flex-col">
-
-            {/* Group Name */}
-            <h2 className="text-2xl font-bold text-primary-200 mb-3 hover:text-primary-100 transition-colors leading-snug">
-                {group.name}
-            </h2>
-
-            {/* Guest Count */}
-            <div className="flex items-center gap-2 text-gray-400 mb-4">
-                <Users size={16} />
-                <span className="text-sm font-numeric">
-                    {guestCount === 0 ? 'אין מוזמנים' : `${guestCount} מוזמנים`}
-                </span>
-            </div>
-
-            {/* Action Buttons - at bottom */}
-            <div className="flex gap-2 mt-auto justify-center">
-                <div onClick={(e) => { e.stopPropagation(); onEdit(group); }}>
-                    <Tooltip content="עריכת שם הקבוצה">
-                        <Button size="sm" variant="ghost">
-                            <Pencil size={16} />
-                        </Button>
-                    </Tooltip>
+        <Card className="hover:shadow-md transition-shadow">
+            <CardHeader className="pb-2">
+                <CardTitle className="text-xl flex justify-between items-start">
+                    <span className="truncate" title={group.name}>{group.name}</span>
+                </CardTitle>
+            </CardHeader>
+            <CardContent>
+                <div className="flex items-center gap-2 text-muted-foreground">
+                    <Users className="h-4 w-4" />
+                    <span className="text-sm font-medium">
+                        {guestCount === 0 ? 'אין מוזמנים' : `${guestCount} מוזמנים`}
+                    </span>
                 </div>
-                <div onClick={(e) => { e.stopPropagation(); onDelete(group.id); }}>
-                    <Tooltip content="מחיקת קבוצה">
-                        <Button size="sm" variant="ghost">
-                            <Trash2 size={16} />
-                        </Button>
+            </CardContent>
+            <CardFooter className="flex justify-end gap-2 pt-0">
+                <TooltipProvider>
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <Button size="icon" variant="ghost" onClick={(e) => { e.stopPropagation(); onEdit(group); }}>
+                                <Pencil className="h-4 w-4" />
+                            </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                            <p>עריכת שם הקבוצה</p>
+                        </TooltipContent>
                     </Tooltip>
-                </div>
-            </div>
-        </div>
+                </TooltipProvider>
+
+                <TooltipProvider>
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <Button size="icon" variant="ghost" className="text-destructive hover:text-destructive hover:bg-destructive/10" onClick={(e) => { e.stopPropagation(); onDelete(group.id); }}>
+                                <Trash2 className="h-4 w-4" />
+                            </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                            <p>מחיקת קבוצה</p>
+                        </TooltipContent>
+                    </Tooltip>
+                </TooltipProvider>
+            </CardFooter>
+        </Card>
     );
 }
 

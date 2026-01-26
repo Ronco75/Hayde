@@ -1,5 +1,7 @@
 import { useState } from 'react';
-import Button from '../common/Button';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 interface GroupFormProps {
     onSubmit: (name: string) => void;
@@ -18,33 +20,26 @@ function GroupForm({ onSubmit, initialValue = '', onCancel }: GroupFormProps) {
 
     return (
         <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-                <label className="block text-sm font-semibold text-gray-300 mb-2">
-                    שם הקבוצה
-                </label>
-                <input 
-                    type="text" 
-                    value={groupName} 
-                    onChange={(e) => setGroupName(e.target.value)} 
-                    placeholder="למשל: משפחה, חברים, עבודה..." 
-                    className="
-                        w-full px-4 py-3 text-base rounded-lg
-                        bg-slate-800 text-gray-100 placeholder:text-gray-400
-                        border border-white/10 focus:outline-none focus:ring-4
-                        focus:ring-primary-300 focus:border-primary-600 
-                        transition-all duration-200
-                    " 
-                    required 
+            <div className="space-y-2">
+                <Label htmlFor="groupName">שם הקבוצה</Label>
+                <Input
+                    id="groupName"
+                    type="text"
+                    value={groupName}
+                    onChange={(e) => setGroupName(e.target.value)}
+                    placeholder="למשל: משפחה, חברים, עבודה..."
+                    required
+                    autoFocus
                 />
             </div>
 
-            <div className="flex justify-end gap-3">
+            <div className="flex justify-end gap-2">
                 {onCancel && (
-                    <Button type="button" variant="secondary" onClick={onCancel}>
+                    <Button type="button" variant="outline" onClick={onCancel}>
                         ביטול
                     </Button>
                 )}
-                <Button type="submit">
+                <Button type="submit" disabled={!groupName.trim()}>
                     שמור
                 </Button>
             </div>

@@ -2,7 +2,7 @@ import { Request, Response, Router } from 'express';
 import prisma from '../config/db';
 import { NotFoundError, UnprocessableEntityError } from '../errors/customErrors';
 import { handlePrismaCreateError, handlePrismaUpdateError, handlePrismaDeleteError } from '../errors/prismaErrorHandler';
-import { CreateGuestInput, UpdateGuestInput, UpdateGiftAmountInput } from '../validators/schemas';
+import { CreateGuestInput, UpdateGuestInput, UpdateGiftAmountInput, BulkDeleteGuestsInput, BulkUpdateRsvpInput, BulkUpdateGroupInput } from '../validators/schemas';
 import { transformGuest, transformGuests } from '../utils/transformers';
 import { authenticate } from '../middleware/authMiddleware';
 import { Decimal } from '@prisma/client/runtime/library';
@@ -511,5 +511,137 @@ export const getGuestStats = async (req: Request, res: Response) => {
   } catch (error) {
     console.error('Error getting guest stats:', error);
     res.status(500).json({ error: 'Failed to get guest statistics' });
+  }
+};
+
+/**
+ * Bulk delete guests
+ * DELETE /api/guests/bulk
+ *
+ * Deletes multiple guests by their IDs
+ */
+export const bulkDeleteGuests = async (req: Request, res: Response) => {
+  const { ids } = req.body as BulkDeleteGuestsInput;
+
+  try {
+    // Get the user's wedding
+    const wedding = await prisma.wedding.findUnique({
+      where: { userId: req.user!.userId },
+    });
+
+    if (!wedding) {
+      res.status(404).json({ error: 'Wedding not found' });
+      return;
+    }
+
+    // Delete only guests that belong to this user's wedding
+    const result = await prisma.guest.deleteMany({
+      where: {
+        id: { in: ids },
+        weddingId: wedding.id, // Security check
+      },
+    });
+
+    res.json({ 
+      deleted: result.count,
+      message: `${result.count} מוזמנים נמחקו בהצלחה`,
+    });
+
+  } catch (error) {
+    console.error('Error bulk deleting guests:', error);
+    res.status(500).json({ error: 'Failed to delete guests' });
+  }
+};
+
+/**
+ * Bulk update RSVP status
+ * PATCH /api/guests/bulk/rsvp
+ *
+ * Updates RSVP status for multiple guests
+ */
+export const bulkUpdateRsvpStatus = async (req: Request, res: Response) => {
+  const { ids, rsvp_status } = req.body as BulkUpdateRsvpInput;
+
+  try {
+    // Get the user's wedding
+    const wedding = await prisma.wedding.findUnique({
+      where: { userId: req.user!.userId },
+    });
+
+    if (!wedding) {
+      res.status(404).json({ error: 'Wedding not found' });
+      return;
+    }
+
+    // Update only guests that belong to this user's wedding
+    const result = await prisma.guest.updateMany({
+      where: {
+        id: { in: ids },
+        weddingId: wedding.id, // Security check
+      },
+      data: { rsvpStatus: rsvp_status },
+    });
+
+    res.json({ 
+      updated: result.count,
+      message: `סטטוס עודכן עבור ${result.count} מוזמנים`,
+    });
+
+  } catch (error) {
+    console.error('Error bulk updating RSVP status:', error);
+    res.status(500).json({ error: 'Failed to update RSVP status' });
+  }
+};
+
+/**
+ * Bulk update group
+ * PATCH /api/guests/bulk/group
+ *
+ * Moves multiple guests to a different group
+ */
+export const bulkUpdateGroup = async (req: Request, res: Response) => {
+  const { ids, group_id } = req.body as BulkUpdateGroupInput;
+
+  try {
+    // Get the user's wedding
+    const wedding = await prisma.wedding.findUnique({
+      where: { userId: req.user!.userId },
+    });
+
+    if (!wedding) {
+      res.status(404).json({ error: 'Wedding not found' });
+      return;
+    }
+
+    // Verify the group belongs to this wedding
+    const group = await prisma.group.findFirst({
+      where: {
+        id: group_id,
+        weddingId: wedding.id,
+      },
+    });
+
+    if (!group) {
+      res.status(404).json({ error: 'Group not found or does not belong to your wedding' });
+      return;
+    }
+
+    // Update only guests that belong to this user's wedding
+    const result = await prisma.guest.updateMany({
+      where: {
+        id: { in: ids },
+        weddingId: wedding.id, // Security check
+      },
+      data: { groupId: group_id },
+    });
+
+    res.json({ 
+      updated: result.count,
+      message: `${result.count} מוזמנים הועברו לקבוצה "${group.name}"`,
+    });
+
+  } catch (error) {
+    console.error('Error bulk updating group:', error);
+    res.status(500).json({ error: 'Failed to update group' });
   }
 };

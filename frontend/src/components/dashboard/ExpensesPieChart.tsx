@@ -85,30 +85,30 @@ function ExpensesPieChart({ className = '' }: ExpensesPieChartProps) {
       const data = payload[0].payload;
       return (
         <motion.div
-          className="bg-surface-primary/95 backdrop-blur-lg border border-border-subtle rounded-xl p-4 shadow-2xl"
+          className="bg-popover text-popover-foreground border border-border rounded-xl p-4 shadow-2xl"
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.15 }}
         >
-          <p className="text-primary-400 font-display font-semibold mb-3 text-lg">
+          <p className="font-semibold mb-3 text-lg">
             {data.name}
           </p>
           <div className="space-y-2 text-sm">
             <div className="flex justify-between gap-6">
-              <span className="text-gray-400">סה"כ עלות:</span>
-              <span className="text-gray-200 font-semibold font-numeric">
+              <span className="text-muted-foreground">סה"כ עלות:</span>
+              <span className="font-semibold font-numeric">
                 {formatNis(data.totalCost)}
               </span>
             </div>
             <div className="flex justify-between gap-6">
-              <span className="text-emerald-400">שולם:</span>
-              <span className="text-emerald-300 font-semibold font-numeric">
+              <span className="text-emerald-500">שולם:</span>
+              <span className="text-emerald-500 font-semibold font-numeric">
                 {formatNis(data.amountPaid)}
               </span>
             </div>
             <div className="flex justify-between gap-6">
-              <span className="text-rose-400">נשאר:</span>
-              <span className="text-rose-300 font-semibold font-numeric">
+              <span className="text-rose-500">נשאר:</span>
+              <span className="text-rose-500 font-semibold font-numeric">
                 {formatNis(data.remaining)}
               </span>
             </div>
@@ -121,7 +121,7 @@ function ExpensesPieChart({ className = '' }: ExpensesPieChartProps) {
 
   if (loading) {
     return (
-      <div className={`bg-surface-primary border border-border-subtle rounded-2xl shadow-xl p-6 ${className}`}>
+      <div className={`bg-card border border-border rounded-xl shadow-sm p-6 ${className}`}>
         <Skeleton variant="card" />
       </div>
     );
@@ -130,17 +130,17 @@ function ExpensesPieChart({ className = '' }: ExpensesPieChartProps) {
   if (chartData.length === 0) {
     return (
       <motion.div
-        className={`bg-surface-primary border border-border-subtle rounded-2xl shadow-xl p-6 ${className}`}
+        className={`bg-card text-card-foreground border border-border rounded-xl shadow-sm p-6 ${className}`}
         variants={fadeIn}
         initial="hidden"
         animate="visible"
       >
-        <h2 className="text-xl font-display font-bold text-gray-50 mb-6 flex items-center gap-2">
-          <PieChartIcon className="w-6 h-6 text-primary-400" />
+        <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
+          <PieChartIcon className="w-6 h-6 text-primary" />
           חלוקת הוצאות לפי קטגוריה
         </h2>
         <EmptyState
-          icon={PieChartIcon}
+          icon={<PieChartIcon className="w-12 h-12" />}
           title="אין הוצאות עדיין"
           description="הוסף הוצאות כדי לראות את החלוקה בגרף"
         />
@@ -150,18 +150,18 @@ function ExpensesPieChart({ className = '' }: ExpensesPieChartProps) {
 
   return (
     <motion.div
-      className={`bg-surface-primary border border-border-subtle rounded-2xl shadow-xl p-6 hover:shadow-2xl transition-shadow duration-300 ${className}`}
+      className={`bg-card text-card-foreground border border-border rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow duration-300 ${className}`}
       variants={fadeIn}
       initial="hidden"
       animate="visible"
     >
       {/* Header */}
-      <h2 className="text-xl font-display font-bold text-gray-50 mb-6 flex items-center gap-2">
+      <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
         <motion.div
           animate={{ rotate: [0, 10, -10, 0] }}
           transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}
         >
-          <PieChartIcon className="w-6 h-6 text-primary-400" />
+          <PieChartIcon className="w-6 h-6 text-primary" />
         </motion.div>
         חלוקת הוצאות לפי קטגוריה
       </h2>
@@ -183,12 +183,15 @@ function ExpensesPieChart({ className = '' }: ExpensesPieChartProps) {
               outerRadius={100}
               paddingAngle={3}
               dataKey="value"
+              label={false}
             >
               {chartData.map((entry, index) => (
                 <Cell
                   key={`cell-${index}`}
                   fill={entry.color}
-                  className="hover:opacity-80 transition-opacity duration-200"
+                  className="hover:opacity-80 transition-opacity duration-200 cursor-pointer"
+                  stroke="hsl(var(--card))"
+                  strokeWidth={2}
                 />
               ))}
             </Pie>
@@ -204,25 +207,30 @@ function ExpensesPieChart({ className = '' }: ExpensesPieChartProps) {
         initial="hidden"
         animate="visible"
       >
-        {chartData.map((item, index) => (
-          <motion.div
-            key={index}
-            className="flex items-center gap-3 text-sm bg-surface-secondary/50 rounded-lg p-2.5 hover:bg-surface-secondary transition-colors duration-200"
-            whileHover={{ scale: 1.02, x: 4 }}
-            transition={{ duration: 0.2 }}
-          >
+        {chartData.map((item, index) => {
+          const total = chartData.reduce((sum, d) => sum + d.value, 0);
+          const percent = total > 0 ? ((item.value / total) * 100).toFixed(0) : 0;
+          return (
             <motion.div
-              className="w-4 h-4 rounded-full flex-shrink-0"
-              style={{ backgroundColor: item.color }}
-              whileHover={{ scale: 1.2 }}
+              key={index}
+              className="flex items-center gap-3 text-sm bg-muted/50 rounded-lg p-2.5 hover:bg-muted transition-colors duration-200"
+              whileHover={{ scale: 1.02, x: 4 }}
               transition={{ duration: 0.2 }}
-            />
-            <span className="text-gray-300 flex-1 truncate">{item.name}</span>
-            <span className="text-primary-400 font-numeric font-semibold">
-              {formatNis(item.value)}
-            </span>
-          </motion.div>
-        ))}
+            >
+              <motion.div
+                className="w-4 h-4 rounded-full flex-shrink-0"
+                style={{ backgroundColor: item.color }}
+                whileHover={{ scale: 1.2 }}
+                transition={{ duration: 0.2 }}
+              />
+              <span className="text-muted-foreground flex-1 truncate">{item.name}</span>
+              <span className="text-xs text-muted-foreground">{percent}%</span>
+              <span className="font-numeric font-semibold">
+                {formatNis(item.value)}
+              </span>
+            </motion.div>
+          );
+        })}
       </motion.div>
     </motion.div>
   );

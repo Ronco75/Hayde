@@ -1,154 +1,77 @@
 /** @type {import('tailwindcss').Config} */
 export default {
+  darkMode: ["class"],
   content: [
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
   ],
-  darkMode: 'class',
   theme: {
+    container: {
+      center: true,
+      padding: "2rem",
+      screens: {
+        "2xl": "1400px",
+      },
+    },
     extend: {
-      fontFamily: {
-        display: ['Playfair Display', 'Rubik', 'serif'],
-        body: ['DM Sans', 'Rubik', 'sans-serif'],
-        sans: ['DM Sans', 'Rubik', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'sans-serif'],
-        hebrew: ['Rubik', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
-        mono: ['Inter', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', 'monospace'],
-        numeric: ['Inter', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', 'monospace'],
-      },
       colors: {
+        border: "hsl(var(--border))",
+        input: "hsl(var(--input))",
+        ring: "hsl(var(--ring))",
+        background: "hsl(var(--background))",
+        foreground: "hsl(var(--foreground))",
         primary: {
-          50: '#FAF5FF',
-          100: '#F3E8FF',
-          200: '#E9D5FF',
-          300: '#D8B4FE',
-          400: '#C084FC',
-          500: '#A855F7',
-          600: '#9333EA',
-          700: '#7E22CE',
-          800: '#6B21A8',
-          900: '#581C87',
+          DEFAULT: "hsl(var(--primary))",
+          foreground: "hsl(var(--primary-foreground))",
         },
-        gold: {
-          300: '#FCD34D',
-          400: '#FBBF24',
-          500: '#F59E0B',
-          600: '#D97706',
-          700: '#B45309',
+        secondary: {
+          DEFAULT: "hsl(var(--secondary))",
+          foreground: "hsl(var(--secondary-foreground))",
         },
-        rose: {
-          300: '#FDA4AF',
-          400: '#FB7185',
-          500: '#F43F5E',
-          600: '#E11D48',
+        destructive: {
+          DEFAULT: "hsl(var(--destructive))",
+          foreground: "hsl(var(--destructive-foreground))",
         },
-        background: {
-          primary: '#0A0A0F',
-          secondary: '#16161D',
-          tertiary: '#1F1F28',
+        muted: {
+          DEFAULT: "hsl(var(--muted))",
+          foreground: "hsl(var(--muted-foreground))",
         },
-        surface: {
-          primary: '#16161D',
-          secondary: '#1F1F28',
-          elevated: '#252531',
+        accent: {
+          DEFAULT: "hsl(var(--accent))",
+          foreground: "hsl(var(--accent-foreground))",
         },
-        border: {
-          subtle: '#2D2D39',
-          default: '#3A3A47',
-          strong: '#4A4A58',
+        popover: {
+          DEFAULT: "hsl(var(--popover))",
+          foreground: "hsl(var(--popover-foreground))",
         },
+        card: {
+          DEFAULT: "hsl(var(--card))",
+          foreground: "hsl(var(--card-foreground))",
+        },
+        violet: {
+            50: '#f5f3ff',
+            100: '#ede9fe',
+            200: '#ddd6fe',
+            300: '#c4b5fd',
+            400: '#a78bfa',
+            500: '#8b5cf6',
+            600: '#7c3aed',
+            700: '#6d28d9',
+            800: '#5b21b6',
+            900: '#4c1d95',
+            950: '#2e1065',
+        }
       },
-      boxShadow: {
-        'xs': '0 1px 2px 0 rgb(0 0 0 / 0.05)',
-        'sm': '0 1px 3px 0 rgb(0 0 0 / 0.12), 0 1px 2px -1px rgb(0 0 0 / 0.08)',
-        'md': '0 4px 6px -1px rgb(0 0 0 / 0.15), 0 2px 4px -2px rgb(0 0 0 / 0.08)',
-        'lg': '0 10px 15px -3px rgb(0 0 0 / 0.2), 0 4px 6px -4px rgb(0 0 0 / 0.1)',
-        'xl': '0 20px 25px -5px rgb(0 0 0 / 0.25), 0 8px 10px -6px rgb(0 0 0 / 0.1)',
-        '2xl': '0 25px 50px -12px rgb(0 0 0 / 0.35)',
-        'glow-purple': '0 0 20px rgba(168, 85, 247, 0.3)',
-        'glow-purple-lg': '0 0 30px rgba(168, 85, 247, 0.4)',
-        'glow-gold': '0 0 20px rgba(245, 158, 11, 0.3)',
-        'inner': 'inset 0 2px 4px 0 rgb(0 0 0 / 0.1)',
-        // Legacy shadows for backward compatibility
-        'elev-1': '0 1px 2px 0 rgb(0 0 0 / 0.2)',
-        'elev-2': '0 2px 8px -2px rgb(0 0 0 / 0.35)',
-        'elev-3': '0 10px 20px -10px rgb(0 0 0 / 0.5)',
+      borderRadius: {
+        lg: "var(--radius)",
+        md: "calc(var(--radius) - 2px)",
+        sm: "calc(var(--radius) - 4px)",
       },
-      transitionDuration: {
-        '75': '75ms',
-        '100': '100ms',
-        '150': '150ms',
-        '200': '200ms',
-        '300': '300ms',
-        '500': '500ms',
-        '700': '700ms',
-        '1000': '1000ms',
-      },
-      transitionTimingFunction: {
-        'bounce': 'cubic-bezier(0.68, -0.55, 0.265, 1.55)',
-        'smooth': 'cubic-bezier(0.25, 0.1, 0.25, 1)',
-      },
-      scale: {
-        '90': '0.9',
-        '95': '0.95',
-        '98': '0.98',
-        '102': '1.02',
-        '105': '1.05',
-        '110': '1.1',
-        '125': '1.25',
-      },
-      backdropBlur: {
-        xs: '2px',
-        sm: '4px',
-        md: '8px',
-        lg: '16px',
-        xl: '24px',
-      },
-      zIndex: {
-        '0': '0',
-        '10': '10',
-        '20': '20',
-        '30': '30',
-        '40': '40',
-        '50': '50',
-        '60': '60',
-        '70': '70',
-      },
-      spacing: {
-        '128': '32rem',
-        '144': '36rem',
-      },
-      animation: {
-        'fade-in': 'fadeIn 0.3s ease-in-out',
-        'slide-up': 'slideUp 0.3s ease-out',
-        'slide-down': 'slideDown 0.3s ease-out',
-        'scale-in': 'scaleIn 0.2s ease-out',
-        'shimmer': 'shimmer 2s infinite',
-        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-      },
-      keyframes: {
-        fadeIn: {
-          '0%': { opacity: '0' },
-          '100%': { opacity: '1' },
-        },
-        slideUp: {
-          '0%': { transform: 'translateY(10px)', opacity: '0' },
-          '100%': { transform: 'translateY(0)', opacity: '1' },
-        },
-        slideDown: {
-          '0%': { transform: 'translateY(-10px)', opacity: '0' },
-          '100%': { transform: 'translateY(0)', opacity: '1' },
-        },
-        scaleIn: {
-          '0%': { transform: 'scale(0.95)', opacity: '0' },
-          '100%': { transform: 'scale(1)', opacity: '1' },
-        },
-        shimmer: {
-          '0%': { backgroundPosition: '-1000px 0' },
-          '100%': { backgroundPosition: '1000px 0' },
-        },
+      fontFamily: {
+        sans: ["Inter", "sans-serif"],
+        display: ["Inter", "sans-serif"],
       },
     },
   },
   plugins: [],
-  important: true,
 }

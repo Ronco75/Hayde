@@ -142,6 +142,28 @@ export const updateGiftAmountSchema = z.object({
     .finite('יש להזין סכום תקין'),
 });
 
+// ============= BULK GUEST SCHEMAS =============
+
+// Bulk delete schema (DELETE /guests/bulk)
+export const bulkDeleteGuestsSchema = z.object({
+  ids: z.array(z.number().int().positive('מזהה אורח לא תקין'))
+    .min(1, 'יש לבחור לפחות אורח אחד למחיקה'),
+});
+
+// Bulk RSVP update schema (PATCH /guests/bulk/rsvp)
+export const bulkUpdateRsvpSchema = z.object({
+  ids: z.array(z.number().int().positive('מזהה אורח לא תקין'))
+    .min(1, 'יש לבחור לפחות אורח אחד'),
+  rsvp_status: rsvpStatusSchema,
+});
+
+// Bulk group update schema (PATCH /guests/bulk/group)
+export const bulkUpdateGroupSchema = z.object({
+  ids: z.array(z.number().int().positive('מזהה אורח לא תקין'))
+    .min(1, 'יש לבחור לפחות אורח אחד'),
+  group_id: z.number().int().positive('יש לבחור קבוצה'),
+});
+
 // ============= IMPORT SCHEMAS =============
 
 /**
@@ -252,6 +274,9 @@ export type UpdateGuestInput = z.infer<typeof updateGuestSchema>;
 
 export type RsvpStatus = z.infer<typeof rsvpStatusSchema>;
 export type UpdateGiftAmountInput = z.infer<typeof updateGiftAmountSchema>;
+export type BulkDeleteGuestsInput = z.infer<typeof bulkDeleteGuestsSchema>;
+export type BulkUpdateRsvpInput = z.infer<typeof bulkUpdateRsvpSchema>;
+export type BulkUpdateGroupInput = z.infer<typeof bulkUpdateGroupSchema>;
 
 export type ConfirmImportInput = z.infer<typeof confirmImportSchema>;
 

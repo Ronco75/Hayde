@@ -13,6 +13,10 @@ import type {
   UpdateGuestDto,
   UpdateRsvpDto,
   UpdateGiftAmountDto,
+  BulkDeleteGuestsDto,
+  BulkUpdateRsvpDto,
+  BulkUpdateGroupDto,
+  BulkOperationResponse,
   CreateExpenseDto,
   UpdateExpenseDto,
   ImportPreviewResponse,
@@ -27,7 +31,8 @@ import type {
   UpdateWeddingDto,
   ForgotPasswordDto,
   ResetPasswordDto,
-  VerifyTokenResponse
+  VerifyTokenResponse,
+  ImageUploadResponse,
 } from '../types';
 
 const API_URL = 'http://localhost:3000/api';
@@ -217,6 +222,18 @@ export const guestsApi = {
     // Delete a guest
     delete: (id: number) => 
       axios.delete<void>(`${API_URL}/guests/${id}`),
+
+    // Bulk delete guests
+    bulkDelete: (data: BulkDeleteGuestsDto) =>
+      axios.delete<BulkOperationResponse>(`${API_URL}/guests/bulk`, { data }),
+
+    // Bulk update RSVP status
+    bulkUpdateRsvp: (data: BulkUpdateRsvpDto) =>
+      axios.patch<BulkOperationResponse>(`${API_URL}/guests/bulk/rsvp`, data),
+
+    // Bulk update group
+    bulkUpdateGroup: (data: BulkUpdateGroupDto) =>
+      axios.patch<BulkOperationResponse>(`${API_URL}/guests/bulk/group`, data),
 };
 
 // ============= IMPORT API =============
@@ -289,4 +306,23 @@ export const weddingApi = {
   // Delete wedding
   delete: () =>
     axios.delete<void>(`${API_URL}/weddings`),
+
+  // Upload invitation image
+  uploadInvitationImage: (file: File) => {
+    const formData = new FormData();
+    formData.append('image', file);
+    return axios.post<ImageUploadResponse>(
+      `${API_URL}/weddings/invitation-image`,
+      formData,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      }
+    );
+  },
+
+  // Delete invitation image
+  deleteInvitationImage: () =>
+    axios.delete<{ message: string; wedding: Wedding }>(`${API_URL}/weddings/invitation-image`),
 };

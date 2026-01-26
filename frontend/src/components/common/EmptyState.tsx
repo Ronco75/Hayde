@@ -3,7 +3,8 @@
  * Display empty states with icon, message, and optional CTA button
  */
 
-import React, { ReactNode } from 'react';
+import React from 'react';
+import type { ReactNode } from 'react';
 import { motion } from 'framer-motion';
 import { scaleIn } from '../../utils/motion';
 
@@ -41,7 +42,7 @@ const EmptyState: React.FC<EmptyStateProps> = ({
       {/* Icon */}
       {icon && (
         <motion.div
-          className="mb-4 text-gray-600"
+          className="mb-4 text-muted-foreground"
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
           transition={{
@@ -59,7 +60,7 @@ const EmptyState: React.FC<EmptyStateProps> = ({
 
       {/* Title */}
       <motion.h3
-        className="text-xl sm:text-2xl font-semibold text-gray-300 mb-2"
+        className="text-xl sm:text-2xl font-semibold text-foreground mb-2"
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2 }}
@@ -70,7 +71,7 @@ const EmptyState: React.FC<EmptyStateProps> = ({
       {/* Description */}
       {description && (
         <motion.p
-          className="text-sm sm:text-base text-gray-400 mb-6 max-w-md"
+          className="text-sm sm:text-base text-muted-foreground mb-6 max-w-md"
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}

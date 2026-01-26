@@ -3,8 +3,10 @@
  * Unified card component with variants, sizes, and optional interactive states
  */
 
-import React, { ReactNode } from 'react';
-import { motion, HTMLMotionProps } from 'framer-motion';
+import React from 'react';
+import type { ReactNode } from 'react';
+import { motion } from 'framer-motion';
+import type { HTMLMotionProps } from 'framer-motion';
 import { cardHover } from '../../utils/motion';
 
 export type CardVariant = 'default' | 'outlined' | 'elevated' | 'glass';

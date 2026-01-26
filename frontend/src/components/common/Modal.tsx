@@ -3,10 +3,29 @@
  * Animated modal dialog with backdrop blur, ESC key, and click-outside-to-close
  */
 
-import { useEffect, ReactNode } from 'react';
+import { useEffect } from 'react';
+import type { ReactNode } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { modalOverlay, modalContent } from '../../utils/motion';
 import { X } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+
+// Modal animation variants
+const modalOverlay = {
+  hidden: { opacity: 0 },
+  visible: { opacity: 1, transition: { duration: 0.2 } },
+  exit: { opacity: 0, transition: { duration: 0.15 } },
+};
+
+const modalContent = {
+  hidden: { opacity: 0, scale: 0.95, y: 20 },
+  visible: {
+    opacity: 1,
+    scale: 1,
+    y: 0,
+    transition: { type: 'spring' as const, stiffness: 300, damping: 30 },
+  },
+  exit: { opacity: 0, scale: 0.95, y: 20, transition: { duration: 0.15 } },
+};
 
 export type ModalSize = 'sm' | 'md' | 'lg' | 'xl' | 'full';
 
@@ -74,7 +93,7 @@ function Modal({
         <>
           {/* Backdrop */}
           <motion.div
-            className="fixed inset-0 bg-black/75 backdrop-blur-md z-40"
+            className="fixed inset-0 bg-black/80 backdrop-blur-sm z-40"
             variants={modalOverlay}
             initial="hidden"
             animate="visible"
@@ -83,20 +102,20 @@ function Modal({
           />
 
           {/* Modal Container */}
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             {/* Modal Content */}
             <motion.div
               className={`
                 ${sizeClasses[size]}
                 w-full
-                bg-surface-primary
-                rounded-2xl
-                shadow-2xl
+                bg-card
+                text-card-foreground
+                rounded-xl
+                shadow-lg
                 border
-                border-border-subtle
-                my-auto
+                border-border
+                flex flex-col
                 max-h-[90vh]
-                overflow-hidden
                 ${className}
               `}
               variants={modalContent}
@@ -107,37 +126,28 @@ function Modal({
             >
               {/* Header */}
               {(title || showCloseButton) && (
-                <div className="flex items-center justify-between p-6 border-b border-border-subtle">
+                <div className="flex items-center justify-between px-6 py-4 border-b">
                   {title && (
-                    <h2 className="text-2xl font-display font-bold text-gray-50">
+                    <h2 className="text-lg font-semibold tracking-tight">
                       {title}
                     </h2>
                   )}
                   {showCloseButton && (
-                    <button
+                    <Button
+                      variant="ghost"
+                      size="icon"
                       onClick={onClose}
-                      className="
-                        p-2
-                        rounded-lg
-                        text-gray-400
-                        hover:text-gray-200
-                        hover:bg-surface-secondary
-                        transition-all
-                        duration-200
-                        focus:outline-none
-                        focus:ring-2
-                        focus:ring-primary-500
-                      "
-                      aria-label="Close modal"
+                      className="h-8 w-8"
                     >
-                      <X className="w-5 h-5" />
-                    </button>
+                      <X className="w-4 h-4" />
+                      <span className="sr-only">Close</span>
+                    </Button>
                   )}
                 </div>
               )}
 
               {/* Body */}
-              <div className="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
+              <div className="p-6 overflow-y-auto">
                 {children}
               </div>
             </motion.div>

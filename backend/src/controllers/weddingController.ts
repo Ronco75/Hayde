@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import prisma from '../config/db';
 import { CreateWeddingInput, UpdateWeddingInput } from '../validators/schemas';
 import { transformWedding } from '../utils/transformers';
+import { getInvitationImageUrl, deleteInvitationImage } from '../middleware/uploadMiddleware';
 
 /**
  * Create a new wedding for the authenticated user
@@ -129,5 +130,93 @@ export const deleteWedding = async (req: Request, res: Response): Promise<void> 
   } catch (error) {
     console.error('Delete wedding error:', error);
     res.status(500).json({ error: 'Failed to delete wedding' });
+  }
+};
+
+/**
+ * Upload invitation image for the authenticated user's wedding
+ * POST /api/weddings/invitation-image
+ * Accepts multipart/form-data with 'image' field
+ */
+export const uploadWeddingInvitationImage = async (req: Request, res: Response): Promise<void> => {
+  try {
+    // Check if wedding exists
+    const existingWedding = await prisma.wedding.findUnique({
+      where: { userId: req.user!.userId },
+    });
+
+    if (!existingWedding) {
+      res.status(404).json({ error: 'לא נמצאה חתונה. יש ליצור חתונה תחילה.' });
+      return;
+    }
+
+    // Check if file was uploaded
+    if (!req.file) {
+      res.status(400).json({ error: 'לא נבחרה תמונה להעלאה' });
+      return;
+    }
+
+    // Delete old image if exists
+    if (existingWedding.invitationImageUrl) {
+      deleteInvitationImage(existingWedding.invitationImageUrl);
+    }
+
+    // Generate URL for the uploaded image
+    const imageUrl = getInvitationImageUrl(req.file.filename);
+
+    // Update wedding with new image URL
+    const wedding = await prisma.wedding.update({
+      where: { userId: req.user!.userId },
+      data: { invitationImageUrl: imageUrl },
+    });
+
+    res.status(200).json({
+      message: 'תמונת ההזמנה הועלתה בהצלחה',
+      imageUrl,
+      wedding: transformWedding(wedding),
+    });
+  } catch (error) {
+    console.error('Upload invitation image error:', error);
+    res.status(500).json({ error: 'שגיאה בהעלאת התמונה' });
+  }
+};
+
+/**
+ * Delete invitation image for the authenticated user's wedding
+ * DELETE /api/weddings/invitation-image
+ */
+export const deleteWeddingInvitationImage = async (req: Request, res: Response): Promise<void> => {
+  try {
+    // Check if wedding exists
+    const existingWedding = await prisma.wedding.findUnique({
+      where: { userId: req.user!.userId },
+    });
+
+    if (!existingWedding) {
+      res.status(404).json({ error: 'לא נמצאה חתונה' });
+      return;
+    }
+
+    if (!existingWedding.invitationImageUrl) {
+      res.status(404).json({ error: 'לא נמצאה תמונת הזמנה למחיקה' });
+      return;
+    }
+
+    // Delete the image file
+    deleteInvitationImage(existingWedding.invitationImageUrl);
+
+    // Update wedding to remove image URL
+    const wedding = await prisma.wedding.update({
+      where: { userId: req.user!.userId },
+      data: { invitationImageUrl: null },
+    });
+
+    res.status(200).json({
+      message: 'תמונת ההזמנה נמחקה בהצלחה',
+      wedding: transformWedding(wedding),
+    });
+  } catch (error) {
+    console.error('Delete invitation image error:', error);
+    res.status(500).json({ error: 'שגיאה במחיקת התמונה' });
   }
 };

@@ -22,15 +22,16 @@ model User {
 }
 
 model Wedding {
-    id          Int       @id @default(autoincrement())
-  brideName   String    @map("bride_name") @db.VarChar(255)
-  groomName   String    @map("groom_name") @db.VarChar(255)
-  weddingDate DateTime  @map("wedding_date") @db.Date
-  venue       String?   @db.VarChar(255)
-  address     String?   @db.VarChar(500)
-  budget      Decimal?  @db.Decimal(10, 2)
-  createdAt   DateTime  @default(now()) @map("created_at")
-  updatedAt   DateTime  @updatedAt @map("updated_at")
+  id                  Int       @id @default(autoincrement())
+  brideName           String    @map("bride_name") @db.VarChar(255)
+  groomName           String    @map("groom_name") @db.VarChar(255)
+  weddingDate         DateTime  @map("wedding_date") @db.Date
+  venue               String?   @db.VarChar(255)
+  address             String?   @db.VarChar(500)
+  budget              Decimal?  @db.Decimal(10, 2)
+  invitationImageUrl  String?   @map("invitation_image_url") @db.VarChar(500)
+  createdAt           DateTime  @default(now()) @map("created_at")
+  updatedAt           DateTime  @updatedAt @map("updated_at")
   
   // Foreign key to User
   userId      Int       @unique @map("user_id")

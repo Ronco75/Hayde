@@ -10,10 +10,13 @@ import {
   markInvitationSent,
   markReminderSent,
   deleteGuest,
-  getGuestStats
+  getGuestStats,
+  bulkDeleteGuests,
+  bulkUpdateRsvpStatus,
+  bulkUpdateGroup
 } from '../controllers/guestController';
 import { validate, validateId, validateGroupId } from '../middleware/validation';
-import { createGuestSchema, updateGuestSchema, updateRsvpStatusSchema, updateGiftAmountSchema } from '../validators/schemas';
+import { createGuestSchema, updateGuestSchema, updateRsvpStatusSchema, updateGiftAmountSchema, bulkDeleteGuestsSchema, bulkUpdateRsvpSchema, bulkUpdateGroupSchema } from '../validators/schemas';
 import { asyncHandler } from '../middleware/errorHandler';
 import { authenticate } from '../middleware/authMiddleware';
 
@@ -24,6 +27,16 @@ router.use(authenticate);
 
 // GET /api/guests/stats - Get guest statistics (MUST come before /:id routes)
 router.get('/stats', asyncHandler(getGuestStats));
+
+// BULK OPERATIONS (MUST come before /:id routes)
+// DELETE /api/guests/bulk - Bulk delete guests
+router.delete('/bulk', validate(bulkDeleteGuestsSchema), asyncHandler(bulkDeleteGuests));
+
+// PATCH /api/guests/bulk/rsvp - Bulk update RSVP status
+router.patch('/bulk/rsvp', validate(bulkUpdateRsvpSchema), asyncHandler(bulkUpdateRsvpStatus));
+
+// PATCH /api/guests/bulk/group - Bulk update group
+router.patch('/bulk/group', validate(bulkUpdateGroupSchema), asyncHandler(bulkUpdateGroup));
 
 // GET /api/guests/group/:groupId - Get guests by group
 router.get('/group/:groupId', validateGroupId, asyncHandler(getGuestsByGroup));
