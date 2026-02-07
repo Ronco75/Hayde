@@ -23,6 +23,7 @@ import DashboardPage from './pages/DashboardPage';
 import CategoriesPage from './pages/CategoriesPage';
 import ExpensesPage from './pages/ExpensesPage';
 import GuestsPage from './pages/GuestsPage';
+import SeatingPage from './pages/SeatingPage';
 import NotFoundPage from './pages/NotFoundPage';
 
 function App() {
@@ -58,6 +59,7 @@ function App() {
                 <Route path="/categories" element={<CategoriesPage />} />
                 <Route path="/categories/:categoryId/expenses" element={<ExpensesPage />} />
                 <Route path="/guests" element={<GuestsPage />} />
+                <Route path="/seating" element={<SeatingPage />} />
               </Route>
             </Route>
 

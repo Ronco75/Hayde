@@ -76,13 +76,12 @@ function formatZodErrors(error: ZodError): Record<string, string> {
  * Ensures the ID is a valid positive integer
  */
 export const validateId = (req: Request, res: Response, next: NextFunction): void => {
-  const idSchema = z.object({
-    id: z.coerce.number().int().positive('ID must be a positive integer'),
-  });
+  const idSchema = z.coerce.number().int().positive('ID must be a positive integer');
 
   try {
-    const validatedParams = idSchema.parse(req.params);
-    req.params = validatedParams as any; // Type assertion needed for Express types
+    const validatedId = idSchema.parse(req.params.id);
+    // Only update the id param, preserve other params (like guestId)
+    req.params.id = validatedId as any;
     next();
   } catch (error) {
     if (error instanceof ZodError) {
@@ -103,13 +102,12 @@ export const validateId = (req: Request, res: Response, next: NextFunction): voi
  * Ensures the groupId is a valid positive integer
  */
 export const validateGroupId = (req: Request, res: Response, next: NextFunction): void => {
-  const groupIdSchema = z.object({
-    groupId: z.coerce.number().int().positive('Group ID must be a positive integer'),
-  });
+  const groupIdSchema = z.coerce.number().int().positive('Group ID must be a positive integer');
 
   try {
-    const validatedParams = groupIdSchema.parse(req.params);
-    req.params = validatedParams as any; // Type assertion needed for Express types
+    const validatedGroupId = groupIdSchema.parse(req.params.groupId);
+    // Only update the groupId param, preserve other params
+    req.params.groupId = validatedGroupId as any;
     next();
   } catch (error) {
     if (error instanceof ZodError) {

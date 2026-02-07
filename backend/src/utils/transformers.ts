@@ -1,6 +1,6 @@
 import { Decimal } from '@prisma/client/runtime/library';
 import type { Decimal as DecimalType } from '@prisma/client/runtime/library';
-import type { Category as PrismaCategory, Expense as PrismaExpense, Group as PrismaGroup, Guest as PrismaGuest, Wedding as PrismaWedding } from '@prisma/client';
+import type { Category as PrismaCategory, Expense as PrismaExpense, Group as PrismaGroup, Guest as PrismaGuest, Wedding as PrismaWedding, Table as PrismaTable, TableAssignment as PrismaTableAssignment } from '@prisma/client';
 
 /**
  * Utility functions to transform Prisma models (camelCase) to API responses (snake_case)
@@ -199,4 +199,116 @@ export function transformWedding(wedding: PrismaWedding): WeddingResponse {
     invitation_image_url: wedding.invitationImageUrl,
     created_at: wedding.createdAt.toISOString(),
   };
+}
+
+// ============= TABLE TRANSFORMERS =============
+
+export interface TableResponse {
+  id: number;
+  wedding_id: number;
+  table_number: string;
+  capacity: number;
+  position_x: number;
+  position_y: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface TableAssignmentResponse {
+  id: number;
+  table_id: number;
+  guest_id: number;
+  guest_name: string;
+  number_of_guests: number;
+  created_at: string;
+}
+
+export interface TableWithAssignmentsResponse extends TableResponse {
+  assigned_count: number;
+  available_seats: number;
+  assignments: TableAssignmentResponse[];
+}
+
+export interface UnassignedGuestResponse {
+  id: number;
+  name: string;
+  number_of_guests: number;
+  group_id: number;
+}
+
+export interface SeatingOverviewResponse {
+  total_tables: number;
+  total_capacity: number;
+  total_assigned: number;
+  total_unassigned_confirmed: number;
+}
+
+export function transformTable(table: PrismaTable): TableResponse {
+  return {
+    id: table.id,
+    wedding_id: table.weddingId,
+    table_number: table.tableNumber,
+    capacity: table.capacity,
+    position_x: table.positionX,
+    position_y: table.positionY,
+    created_at: table.createdAt.toISOString(),
+    updated_at: table.updatedAt.toISOString(),
+  };
+}
+
+export function transformTables(tables: PrismaTable[]): TableResponse[] {
+  return tables.map(transformTable);
+}
+
+/**
+ * Transform a table with its assignments
+ * The input should include the assignments relation with guest data
+ */
+export function transformTableWithAssignments(
+  table: PrismaTable & {
+    assignments: (PrismaTableAssignment & {
+      guest: { id: number; name: string; numberOfGuests: number };
+    })[];
+  }
+): TableWithAssignmentsResponse {
+  const assignments = table.assignments.map((a) => ({
+    id: a.id,
+    table_id: a.tableId,
+    guest_id: a.guestId,
+    guest_name: a.guest.name,
+    number_of_guests: a.guest.numberOfGuests,
+    created_at: a.createdAt.toISOString(),
+  }));
+
+  const assignedCount = assignments.reduce((sum, a) => sum + a.number_of_guests, 0);
+
+  return {
+    ...transformTable(table),
+    assigned_count: assignedCount,
+    available_seats: table.capacity - assignedCount,
+    assignments,
+  };
+}
+
+export function transformTablesWithAssignments(
+  tables: (PrismaTable & {
+    assignments: (PrismaTableAssignment & {
+      guest: { id: number; name: string; numberOfGuests: number };
+    })[];
+  })[]
+): TableWithAssignmentsResponse[] {
+  return tables.map(transformTableWithAssignments);
+}
+
+export function transformUnassignedGuest(guest: PrismaGuest): UnassignedGuestResponse {
+  return {
+    id: guest.id,
+    name: guest.name,
+    number_of_guests: guest.numberOfGuests,
+    group_id: guest.groupId,
+  };
+}
+
+export function transformUnassignedGuests(guests: PrismaGuest[]): UnassignedGuestResponse[] {
+  return guests.map(transformUnassignedGuest);
 }

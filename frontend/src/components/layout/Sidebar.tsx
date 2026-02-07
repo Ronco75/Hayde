@@ -2,13 +2,14 @@ import { Link, useLocation } from "react-router-dom"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import {
-    LayoutDashboard,
+    Home,
     Users,
-    Settings,
+    Coins,
     LogOut,
     Menu,
     X,
-    HeartHandshake
+    Grid3X3,
+    Settings
 } from "lucide-react"
 import { useState } from "react"
 import { useAuth } from "@/contexts/AuthContext"
@@ -16,32 +17,41 @@ import { useSidebar } from "@/contexts/SidebarContext"
 
 const sidebarItems = [
     {
-        title: "Dashboard",
+        title: "לוח בקרה",
         href: "/dashboard",
-        icon: LayoutDashboard,
+        icon: Home,
     },
     {
-        title: "Categories",
+        title: "ניהול הוצאות",
         href: "/categories",
-        icon: Settings, // Using Settings icon for Categories as a placeholder or adjust semantic meaning
+        icon: Coins,
     },
     {
-        title: "Guests",
+        title: "מוזמנים",
         href: "/guests",
         icon: Users,
     },
     {
-        title: "Wedding Setup",
-        href: "/wedding-setup",
-        icon: HeartHandshake,
+        title: "סידורי הושבה",
+        href: "/seating",
+        icon: Grid3X3,
     },
 ]
+
+const settingsItem = {
+    title: "הגדרות",
+    href: "/wedding-setup",
+    icon: Settings,
+}
 
 export function Sidebar() {
     const location = useLocation()
     const { logout } = useAuth()
     const [isOpen, setIsOpen] = useState(false)
     const { isCollapsed, toggleCollapsed } = useSidebar()
+
+    // On mobile (when isOpen), always show expanded sidebar
+    const showCollapsed = isCollapsed && !isOpen
 
     return (
         <>
@@ -56,14 +66,14 @@ export function Sidebar() {
 
             <div
                 className={cn(
-                    "fixed inset-y-0 left-0 z-40 transform bg-card border-r transition-all duration-300 ease-in-out md:translate-x-0 outline-none",
-                    isOpen ? "translate-x-0" : "-translate-x-full",
-                    isCollapsed ? "md:w-20" : "md:w-64"
+                    "fixed inset-y-0 left-0 z-40 w-64 bg-card border-r transition-all duration-300 ease-in-out outline-none",
+                    isOpen ? "flex" : "hidden md:flex",
+                    showCollapsed && "md:w-20"
                 )}
             >
-                <div className="flex h-full flex-col">
-                    <div className={cn("flex h-16 items-center px-4", isCollapsed ? "justify-center" : "justify-between")}>
-                        {!isCollapsed && (
+                <div className="flex h-full w-full flex-col">
+                    <div className={cn("flex h-16 items-center px-4", showCollapsed ? "justify-center" : "justify-between")}>
+                        {!showCollapsed && (
                             <Link to="/dashboard" className="flex items-center gap-2 font-semibold overflow-hidden whitespace-nowrap">
                                 <span className="text-xl font-bold text-primary">Hayde</span>
                             </Link>
@@ -89,31 +99,44 @@ export function Sidebar() {
                                         className={cn(
                                             "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground",
                                             isActive ? "bg-accent text-accent-foreground" : "text-muted-foreground",
-                                            isCollapsed && "justify-center px-2"
+                                            showCollapsed && "justify-center px-2"
                                         )}
                                         onClick={() => setIsOpen(false)}
-                                        title={isCollapsed ? item.title : undefined}
+                                        title={showCollapsed ? item.title : undefined}
                                     >
                                         <item.icon className="h-4 w-4 flex-shrink-0" />
-                                        {!isCollapsed && <span>{item.title}</span>}
+                                        {!showCollapsed && <span>{item.title}</span>}
                                     </Link>
                                 )
                             })}
                         </nav>
                     </div>
 
-                    <div className="mt-auto border-t p-4">
+                    <div className="mt-auto border-t p-4 space-y-2">
+                        <Link
+                            to={settingsItem.href}
+                            className={cn(
+                                "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground",
+                                location.pathname.startsWith(settingsItem.href) ? "bg-accent text-accent-foreground" : "text-muted-foreground",
+                                showCollapsed && "justify-center px-2"
+                            )}
+                            onClick={() => setIsOpen(false)}
+                            title={showCollapsed ? settingsItem.title : undefined}
+                        >
+                            <settingsItem.icon className="h-4 w-4 flex-shrink-0" />
+                            {!showCollapsed && <span>{settingsItem.title}</span>}
+                        </Link>
                         <Button
                             variant="ghost"
                             className={cn(
                                 "w-full text-muted-foreground hover:text-foreground",
-                                isCollapsed ? "justify-center px-2" : "justify-start gap-2"
+                                showCollapsed ? "justify-center px-2" : "justify-start gap-2"
                             )}
                             onClick={logout}
-                            title={isCollapsed ? "Log out" : undefined}
+                            title={showCollapsed ? "Log out" : undefined}
                         >
                             <LogOut className="h-4 w-4 flex-shrink-0" />
-                            {!isCollapsed && <span>Log out</span>}
+                            {!showCollapsed && <span>Log out</span>}
                         </Button>
                     </div>
                 </div>

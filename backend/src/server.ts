@@ -8,6 +8,7 @@ import guestRoutes from './routes/guestRoutes';
 import groupRoutes from './routes/groupRoutes';
 import importRoutes from './routes/importRoutes';
 import weddingRoutes from './routes/weddingRoute';
+import tableRoutes from './routes/tableRoutes';
 import { errorHandler } from './middleware/errorHandler';
 import authRoutes from './routes/authRoute';
 import { getUploadsPath } from './middleware/uploadMiddleware';
@@ -30,6 +31,7 @@ app.use('/api/groups', groupRoutes);
 app.use('/api/import', importRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/weddings', weddingRoutes);
+app.use('/api/tables', tableRoutes);
 
 // Test database connection
 app.get('/api/health', async (req, res) => {

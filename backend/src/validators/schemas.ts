@@ -254,7 +254,58 @@ export const updateWeddingSchema = z.object({
   budget: z.number().positive().optional(),
 });
 
+// ============= TABLE SCHEMAS =============
 
+/**
+ * Table capacity - only 12 or 24 seats allowed
+ */
+export const tableCapacitySchema = z.union([z.literal(12), z.literal(24)]);
+
+/**
+ * Create table schema
+ */
+export const createTableSchema = z.object({
+  table_number: z.string()
+    .min(1, 'יש להזין מספר/שם שולחן')
+    .max(50, 'מספר השולחן ארוך מדי (מקסימום 50 תווים)')
+    .trim(),
+  capacity: tableCapacitySchema.optional().default(12),
+  position_x: z.number().nonnegative('מיקום X חייב להיות חיובי').optional().default(100),
+  position_y: z.number().nonnegative('מיקום Y חייב להיות חיובי').optional().default(100),
+});
+
+/**
+ * Update table schema
+ */
+export const updateTableSchema = z.object({
+  table_number: z.string()
+    .min(1, 'יש להזין מספר/שם שולחן')
+    .max(50, 'מספר השולחן ארוך מדי')
+    .trim()
+    .optional(),
+  capacity: tableCapacitySchema.optional(),
+  position_x: z.number().nonnegative().optional(),
+  position_y: z.number().nonnegative().optional(),
+});
+
+/**
+ * Update table position only (for drag operations)
+ */
+export const updateTablePositionSchema = z.object({
+  position_x: z.number().nonnegative('מיקום X חייב להיות חיובי'),
+  position_y: z.number().nonnegative('מיקום Y חייב להיות חיובי'),
+});
+
+/**
+ * Assign guest to table schema
+ */
+export const assignGuestSchema = z.object({
+  guest_id: z.number().int().positive('יש לבחור אורח'),
+});
+
+export const tableIdSchema = z.object({
+  id: z.coerce.number().int().positive('מזהה השולחן לא תקין'),
+});
 
 /**
  * Type exports for use in controllers
@@ -287,3 +338,8 @@ export type ResetPasswordInput = z.infer<typeof resetPasswordSchema>;
 
 export type CreateWeddingInput = z.infer<typeof createWeddingSchema>;
 export type UpdateWeddingInput = z.infer<typeof updateWeddingSchema>;
+
+export type CreateTableInput = z.infer<typeof createTableSchema>;
+export type UpdateTableInput = z.infer<typeof updateTableSchema>;
+export type UpdateTablePositionInput = z.infer<typeof updateTablePositionSchema>;
+export type AssignGuestInput = z.infer<typeof assignGuestSchema>;

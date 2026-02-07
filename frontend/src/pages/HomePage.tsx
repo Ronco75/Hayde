@@ -2,13 +2,14 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import {
-  ArrowRight,
   Users,
   Wallet,
-  CalendarRange
+  CalendarRange,
+  ArrowLeft
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { ThemeToggle } from '@/components/ui/theme-toggle';
 
 const HomePage: React.FC = () => {
   const { isAuthenticated } = useAuth();
@@ -25,6 +26,7 @@ const HomePage: React.FC = () => {
             Hayde
           </div>
           <nav className="flex items-center gap-4">
+            <ThemeToggle />
             {isAuthenticated ? (
               <Link to="/dashboard">
                 <Button>לוח בקרה</Button>
@@ -151,7 +153,7 @@ const HomePage: React.FC = () => {
               <Link to="/register">
                 <Button variant="secondary" size="lg" className="rounded-full px-8">
                   הרשמה בחינם
-                  <ArrowRight className="mr-2 h-4 w-4" />
+                  <ArrowLeft className="mr-2 h-4 w-4" />
                 </Button>
               </Link>
             </div>
@@ -166,9 +168,6 @@ const HomePage: React.FC = () => {
       <footer className="border-t py-6 md:py-0">
         <div className="container flex flex-col items-center justify-between gap-4 md:h-24 md:flex-row">
           <div className="flex flex-col items-center gap-4 px-8 md:flex-row md:gap-2 md:px-0">
-            <p className="text-center text-sm leading-loose text-muted-foreground md:text-left">
-              Built by Hayde Team. The source code is available on GitHub.
-            </p>
           </div>
         </div>
       </footer>

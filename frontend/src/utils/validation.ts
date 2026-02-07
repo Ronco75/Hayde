@@ -219,3 +219,19 @@ export const weddingSetupSchema = z.object({
 });
 
 export type WeddingSetupFormData = z.infer<typeof weddingSetupSchema>;
+
+/**
+ * Table (Seating) Validation Schema
+ */
+export const tableSchema = z.object({
+  table_number: z.string()
+    .min(1, 'יש להזין מספר/שם שולחן')
+    .max(50, 'מספר השולחן ארוך מדי (מקסימום 50 תווים)')
+    .trim(),
+
+  capacity: z.union([z.literal(12), z.literal(24)], {
+    errorMap: () => ({ message: 'יש לבחור קיבולת: 12 או 24 מושבים' }),
+  }),
+});
+
+export type TableFormData = z.infer<typeof tableSchema>;

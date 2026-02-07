@@ -303,3 +303,77 @@ export interface ImageUploadResponse {
   imageUrl: string;
   wedding: Wedding;
 }
+
+// ========================= Seating Types =========================
+// Table entity
+export interface Table {
+  id: number;
+  wedding_id: number;
+  table_number: string;
+  capacity: number;
+  position_x: number;
+  position_y: number;
+  created_at: string;
+  updated_at: string;
+}
+
+// Table assignment
+export interface TableAssignment {
+  id: number;
+  table_id: number;
+  guest_id: number;
+  guest_name: string;
+  number_of_guests: number;
+  created_at: string;
+}
+
+// Table with assigned guests
+export interface TableWithAssignments extends Table {
+  assigned_count: number;
+  available_seats: number;
+  assignments: TableAssignment[];
+}
+
+// Unassigned guest (simplified for pool)
+export interface UnassignedGuest {
+  id: number;
+  name: string;
+  number_of_guests: number;
+  group_id: number;
+}
+
+// Seating overview stats
+export interface SeatingOverview {
+  total_tables: number;
+  total_capacity: number;
+  total_assigned: number;
+  total_unassigned_confirmed: number;
+}
+
+// ============ Table DTOs ============
+// For creating a new table
+export interface CreateTableDto {
+  table_number: string;
+  capacity?: 12 | 24;
+  position_x?: number;
+  position_y?: number;
+}
+
+// For updating a table
+export interface UpdateTableDto {
+  table_number?: string;
+  capacity?: 12 | 24;
+  position_x?: number;
+  position_y?: number;
+}
+
+// For updating table position only
+export interface UpdateTablePositionDto {
+  position_x: number;
+  position_y: number;
+}
+
+// For assigning a guest to a table
+export interface AssignGuestDto {
+  guest_id: number;
+}

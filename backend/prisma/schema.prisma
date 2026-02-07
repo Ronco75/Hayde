@@ -38,11 +38,13 @@ model Wedding {
   user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   
   // Relations to existing models
-  categories  Category[]
-  expenses    Expense[]
-  groups      Group[]
-  guests      Guest[]
-  
+  categories        Category[]
+  expenses          Expense[]
+  groups            Group[]
+  guests            Guest[]
+  tables            Table[]
+  tableAssignments  TableAssignment[]
+
   @@map("weddings")
 }
 
@@ -105,9 +107,45 @@ model Guest {
   
   wedding          Wedding   @relation(fields: [weddingId], references: [id], onDelete: Cascade)
   group            Group     @relation(fields: [groupId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  tableAssignment  TableAssignment?
 
   @@index([weddingId])
   @@index([groupId], map: "idx_guests_group_id")
   @@index([rsvpStatus], map: "idx_guests_rsvp_status")
   @@map("guests")
+}
+
+model Table {
+  id          Int       @id @default(autoincrement())
+  weddingId   Int       @map("wedding_id")
+  tableNumber String    @map("table_number") @db.VarChar(50)
+  capacity    Int       @default(12)
+  positionX   Float     @default(100) @map("position_x")
+  positionY   Float     @default(100) @map("position_y")
+  createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt   DateTime  @updatedAt @map("updated_at") @db.Timestamp(6)
+
+  wedding     Wedding   @relation(fields: [weddingId], references: [id], onDelete: Cascade)
+  assignments TableAssignment[]
+
+  @@index([weddingId])
+  @@map("tables")
+}
+
+model TableAssignment {
+  id        Int       @id @default(autoincrement())
+  weddingId Int       @map("wedding_id")
+  tableId   Int       @map("table_id")
+  guestId   Int       @unique @map("guest_id")
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamp(6)
+
+  wedding   Wedding   @relation(fields: [weddingId], references: [id], onDelete: Cascade)
+  table     Table     @relation(fields: [tableId], references: [id], onDelete: Cascade)
+  guest     Guest     @relation(fields: [guestId], references: [id], onDelete: Cascade)
+
+  @@unique([weddingId, guestId])
+  @@index([weddingId])
+  @@index([tableId])
+  @@index([guestId])
+  @@map("table_assignments")
 }

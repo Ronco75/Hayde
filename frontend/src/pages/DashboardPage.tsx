@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import {
@@ -17,6 +18,7 @@ import toast from 'react-hot-toast';
 import ExpensesPieChart from '../components/dashboard/ExpensesPieChart';
 
 export default function DashboardPage() {
+  const navigate = useNavigate();
   const [guestStats, setGuestStats] = useState<GuestStats | null>(null);
   const [expenseStats, setExpenseStats] = useState<{ total: number, paid: number } | null>(null);
   const [loading, setLoading] = useState(true);
@@ -114,12 +116,12 @@ export default function DashboardPage() {
         </Card>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
+      <div className="grid gap-4 lg:grid-cols-7">
         {/* Main Chart Card */}
-        <ExpensesPieChart className="col-span-4" />
+        <ExpensesPieChart className="lg:col-span-4" />
 
         {/* Detailed Stats Card */}
-        <Card className="col-span-3">
+        <Card className="lg:col-span-3">
           <CardHeader>
             <CardTitle>סטטיסטיקת אורחים</CardTitle>
           </CardHeader>
@@ -161,7 +163,7 @@ export default function DashboardPage() {
             </div>
 
             <div className="mt-8 pt-6 border-t">
-              <Button className="w-full" variant="outline">
+              <Button className="w-full" variant="outline" onClick={() => navigate('/guests')}>
                 ניהול רשימת מוזמנים
                 <ArrowUpRight className="mr-2 h-4 w-4" />
               </Button>

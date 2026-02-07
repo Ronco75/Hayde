@@ -33,6 +33,14 @@ import type {
   ResetPasswordDto,
   VerifyTokenResponse,
   ImageUploadResponse,
+  Table,
+  TableWithAssignments,
+  UnassignedGuest,
+  SeatingOverview,
+  CreateTableDto,
+  UpdateTableDto,
+  UpdateTablePositionDto,
+  AssignGuestDto,
 } from '../types';
 
 const API_URL = 'http://localhost:3000/api';
@@ -325,4 +333,47 @@ export const weddingApi = {
   // Delete invitation image
   deleteInvitationImage: () =>
     axios.delete<{ message: string; wedding: Wedding }>(`${API_URL}/weddings/invitation-image`),
+};
+
+// ============= TABLES API (Seating) =============
+export const tablesApi = {
+  // Get all tables with assignments
+  getAll: () =>
+    axios.get<TableWithAssignments[]>(`${API_URL}/tables`),
+
+  // Get a single table by ID
+  getById: (id: number) =>
+    axios.get<TableWithAssignments>(`${API_URL}/tables/${id}`),
+
+  // Create a new table
+  create: (data: CreateTableDto) =>
+    axios.post<Table>(`${API_URL}/tables`, data),
+
+  // Update a table
+  update: (id: number, data: UpdateTableDto) =>
+    axios.put<TableWithAssignments>(`${API_URL}/tables/${id}`, data),
+
+  // Update table position (for drag operations)
+  updatePosition: (id: number, data: UpdateTablePositionDto) =>
+    axios.patch<{ success: boolean }>(`${API_URL}/tables/${id}/position`, data),
+
+  // Delete a table
+  delete: (id: number) =>
+    axios.delete<void>(`${API_URL}/tables/${id}`),
+
+  // Assign a guest to a table
+  assignGuest: (tableId: number, data: AssignGuestDto) =>
+    axios.post<TableWithAssignments>(`${API_URL}/tables/${tableId}/assign`, data),
+
+  // Unassign a guest from a table
+  unassignGuest: (tableId: number, guestId: number) =>
+    axios.delete<void>(`${API_URL}/tables/${tableId}/assign/${guestId}`),
+
+  // Get unassigned confirmed guests
+  getUnassignedGuests: () =>
+    axios.get<UnassignedGuest[]>(`${API_URL}/tables/unassigned-guests`),
+
+  // Get seating overview stats
+  getOverview: () =>
+    axios.get<SeatingOverview>(`${API_URL}/tables/overview`),
 };
